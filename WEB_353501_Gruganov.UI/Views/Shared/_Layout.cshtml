@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css"/>
+</head>
+<body>  
+<header>
+    <div class="container">
+        <nav class="navbar bg-dark navbar-expand-md border-bottom" data-bs-theme="dark">
+            <a class="navbar-brand" href="#">353501</a>
+            <div class="navbar-nav">
+                <a class="nav-item nav-link active" asp-controller="Home"
+                   asp-action="Index">Лб 1</a>
+                <a class="nav-item nav-link" asp-controller="Product"
+                   asp-action="Index">Каталог</a>
+                <a class="nav-item nav-link" asp-area="Admin"
+                   asp-page="/Index">Администрирование</a>
+            </div>
+            <a class="navbar-text ms-auto" asp-controller="Cart"
+               asp-action="Index">
+                00,0 руб <i class="bi bi-cart"></i>(0)
+            </a>
+            <div class="dropdown ms-4 nav-color">
+                <button class="btn btn-secondary dropdown-toggle"
+                        type="button" id="dropdownMenuButton"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    User@gmail.com
+                    <img src="Images/avatar.png" width="30" alt="User"
+                         class="rounded nav-color"/>
+                </button>
+                <ul class="dropdown-menu bg-light"
+                    aria-labelledby="dropdownMenuButton">
+                    <li>
+                        <span class="dropdown-item-text">
+                            <img src="Images/avatar.png"
+                                 width="50" alt="User" class="rounded"/>
+                            user@gmail.com
+                        </span>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider"/>
+                    </li>
+                    <li>
+                        <form method="post" id="logoutForm" class="form-inline">
+                            <button id="logout" type="submit" class="nav-link btn btn-link text-dark"
+                                    asp-controller="Account" asp-action="LogOut">Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+<main class="container">
+    @RenderBody()
+</main>
+<footer>
+    <div class="container">
+        <div class="navbar bg-dark navbar-expand-md border-bottom" data-bs-theme="dark">
+            <div class="navbar-nav ms-auto">
+                <a class="nav-item nav-link" href="http://www.facebook.com">
+                    <i class="bi bi-facebook" style="font-size: 2rem"></i>
+                </a>
+                <a class="nav-item nav-link" href="http://www.twitter.com">
+                    <i class="bi bi-twitter-x" style="font-size: 2rem"></i>
+                </a>
+                <a class="nav-item nav-link" href="http://www.vk.com">
+                    <i class="bi-telegram" style="font-size: 2rem"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", false);
+</body>
+</html>
