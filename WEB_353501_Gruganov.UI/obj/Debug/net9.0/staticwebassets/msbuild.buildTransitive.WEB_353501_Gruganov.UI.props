@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\WEB_353501_Gruganov.UI.props" />
-</Project>
