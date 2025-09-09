@@ -14,6 +14,9 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
+.idea/
+*.sln.DotSettings.user
+
 # Mono auto generated files
 mono_crash.*
 
