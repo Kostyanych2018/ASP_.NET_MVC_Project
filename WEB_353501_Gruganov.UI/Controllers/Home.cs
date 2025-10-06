@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using WebApplication1.Models;
+using WEB_353501_Gruganov.Models;
+using WEB_353501_Gruganov.UI.Models;
 
-namespace WebApplication1.Controllers;
+namespace WEB_353501_Gruganov.UI.Controllers;
 
 public class Home : Controller
 {
@@ -19,7 +20,7 @@ public class Home : Controller
         };
 
         ViewBag.List = new SelectList(list, "Id", "Name");
-
+        
         return View();
     }
 }

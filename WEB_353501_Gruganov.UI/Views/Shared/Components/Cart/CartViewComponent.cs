@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace WebApplication1.Views.Shared.Components;
+namespace WEB_353501_Gruganov.UI.Views.Shared.Components.Cart;
 
 public class CartViewComponent: ViewComponent
 {
@@ -8,4 +8,5 @@ public class CartViewComponent: ViewComponent
     {
         return View();
     }
+    
 }

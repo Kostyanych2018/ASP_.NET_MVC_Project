@@ -1,4 +1,4 @@
-namespace WebApplication1.Models;
+namespace WEB_353501_Gruganov.Models;
 
 public class ErrorViewModel
 {

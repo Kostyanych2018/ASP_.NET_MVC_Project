@@ -4,11 +4,15 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>WebApplication1</RootNamespace>
+        <RootNamespace>WEB_353501_Gruganov.UI</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="wwwroot\Images\" />
+      <ProjectReference Include="..\WEB_353501_Gruganov.Domain\WEB_353501_Gruganov.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Views\Game\Index.cshtml" />
     </ItemGroup>
 
 </Project>

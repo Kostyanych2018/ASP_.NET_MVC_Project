@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_353501_Gruganov.UI", "WEB_353501_Gruganov.UI\WEB_353501_Gruganov.UI.csproj", "{D98D6434-A179-400B-9BED-E6F030EF7A69}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_353501_Gruganov.Domain", "WEB_353501_Gruganov.Domain\WEB_353501_Gruganov.Domain.csproj", "{4063A5A9-DA3D-450F-835E-1A0C6F8827D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{D98D6434-A179-400B-9BED-E6F030EF7A69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D98D6434-A179-400B-9BED-E6F030EF7A69}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D98D6434-A179-400B-9BED-E6F030EF7A69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4063A5A9-DA3D-450F-835E-1A0C6F8827D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4063A5A9-DA3D-450F-835E-1A0C6F8827D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4063A5A9-DA3D-450F-835E-1A0C6F8827D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4063A5A9-DA3D-450F-835E-1A0C6F8827D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

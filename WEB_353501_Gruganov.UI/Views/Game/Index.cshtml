@@ -1,0 +1,105 @@
+@model ListModel<Game>
+
+@{
+    var request = ViewContext.HttpContext.Request;
+    var returnUrl = request.Path + request.QueryString.ToUriComponent();
+    var genres = ViewData["Genres"] as List<Genre>;
+    var currentGenreName = ViewData["CurrentGenreName"] as string;
+    string? genreName = request.Query["genre"].ToString();
+}
+<h1>@ViewData["Title"]</h1>
+
+<div class="dropdown mb-4">
+    <button class="btn btn-secondary dropdown-toggle"
+            aria-expanded="False"
+            id="genreDropdown"
+            data-bs-toggle="dropdown"
+            type="button">
+        @currentGenreName
+    </button>
+    <ul class="dropdown-menu">
+        <li>
+            <a class="dropdown-item"
+               asp-controller="Game"
+               asp-action="Index"
+               asp-route-genre="@null">
+                Все категории</a>
+        </li>
+        @foreach (var genre in genres) {
+            <li>
+                <a class="dropdown-item"
+                   asp-controller="Game"
+                   asp-action="Index"
+                   asp-route-genre="@genre.NormalizedName">
+                    @genre.Name
+                </a>
+            </li>
+        }
+    </ul>
+</div>
+
+<div class="row">
+    @foreach (var game in Model.Items) {
+        <div class="col-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <img src="@game.Image" alt="@game.Name"
+                         class="w-100 h-100"/>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">@game.Name</div>
+                    <p class="card-text">@game.Description</p>
+                    <small class="text-secondary">@game.Price BYN</small>
+                </div>
+                <div class="card-footer text-center">
+                    <a asp-controller="Cart"
+                       asp-action="Add"
+                       asp-route-id="@game.Id"
+                       asp-route-returnurl="@returnUrl"
+                       class="btn btn-primary">
+                        Add to cart <i class="bi bi-cart"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+            <a class="page-link"
+               asp-controller="Game"
+               asp-action="Index"
+               asp-route-genre="@genreName"
+               asp-route-pageNo="@(Model.CurrentPage - 1)">
+                Предыдущая
+            </a>
+        </li>
+        @for (int i = 1; i <= Model.TotalPages; i++) {
+            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                <a class="page-link"
+                   asp-controller="Game"
+                   asp-action="Index"
+                   asp-route-genre="@genreName"
+                   asp-route-pageNo="@i">
+                    @i
+                </a>
+            </li>
+        }
+        <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+            <a class="page-link"
+               asp-controller="Game"
+               asp-action="Index"
+               asp-route-genre="@genreName"
+               asp-route-pageNo="@(Model.CurrentPage + 1)">
+                Следующая
+            </a>
+        </li>
+
+    </ul>
+</nav>
+
+
+
+
