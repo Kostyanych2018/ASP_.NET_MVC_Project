@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:5002
+
+# GET: /api/genres
+GET {{baseUrl}}/api/Genre
+Accept: application/json
+
+###
+
+GET {{baseUrl}}/api/genres
+Accept: application/json
+

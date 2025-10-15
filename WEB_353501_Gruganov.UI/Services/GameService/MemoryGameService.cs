@@ -106,7 +106,7 @@ public class MemoryGameService : IGameService
             .Skip((pageNo - 1) * itemsPerPage)
             .Take(itemsPerPage)
             .ToList();
-        
+
         var listModel = new ListModel<Game>()
         {
             Items = filteredGames,

@@ -1,0 +1,6 @@
+@WEB_353501_Gruganov_HostAddress = http://localhost:5128
+
+GET {{WEB_353501_Gruganov_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

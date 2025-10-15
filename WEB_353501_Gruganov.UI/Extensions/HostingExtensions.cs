@@ -6,8 +6,8 @@ public static class HostingExtensions
 {
     public static void RegisterCustomServices(this WebApplicationBuilder builder)
     {
-        builder.Services
-            .AddScoped<IGenreService, MemoryGenreService>()
-            .AddScoped<IGameService, MemoryGameService>();
+        // builder.Services
+        //     .AddScoped<IGenreService, MemoryGenreService>()
+        //     .AddScoped<IGameService, MemoryGameService>();
     }
 }

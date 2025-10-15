@@ -11,7 +11,7 @@ public class ResponseData<T>
         return new ResponseData<T> { Data = data };
     }
 
-    public static ResponseData<T> Error(string? errorMessage, T? data)
+    public static ResponseData<T> Error(string? errorMessage, T? data= default)
     {
         return new ResponseData<T>
         {
