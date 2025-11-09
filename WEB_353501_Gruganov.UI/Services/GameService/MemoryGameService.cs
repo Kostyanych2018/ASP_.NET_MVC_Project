@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WEB_353501_Gruganov.UI.Services.GameService;
 
-public class MemoryGameService : IGameService
+public class MemoryGameService 
 {
     private List<Game> _games;
     private List<Genre> _genres;
@@ -88,7 +88,7 @@ public class MemoryGameService : IGameService
         };
     }
 
-    public Task<ResponseData<ListModel<Game>>> GetGamesListAsync(string? genreNormalizedName, int pageNo = 1)
+    public Task<ResponseData<ListModel<Game>>> GetGamesListAsync(string? genreNormalizedName, int pageNo = 1, int? pageSize = null)
     {
         var filteredGames = _games;
 

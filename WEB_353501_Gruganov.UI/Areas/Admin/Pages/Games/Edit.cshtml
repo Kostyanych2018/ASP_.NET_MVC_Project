@@ -1,0 +1,57 @@
+@page
+@model WEB_353501_Gruganov.UI.Areas.Admin.Pages.Games.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Редактирование</h1>
+
+<h4>Game</h4>
+<hr/>
+<div class="row">
+    <div class="col-md-4">
+        <form method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Game.Id"/>
+            <div class="form-group">
+
+                <label asp-for="Game.Name" class="control-label"></label>
+                <input asp-for="Game.Name" class="form-control"/>
+                <span asp-validation-for="Game.Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+
+                <label asp-for="Game.Description" class="control-label"></label>
+                <input asp-for="Game.Description" class="form-control"/>
+                <span asp-validation-for="Game.Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+
+                <label asp-for="Game.GenreId" class="control-label"></label>
+                <select asp-for="Game.GenreId" class="form-control" asp-items="ViewBag.Genres"></select>
+                <span asp-validation-for="Game.GenreId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+
+                <label asp-for="Game.Price" class="control-label"></label>
+                <input asp-for="Game.Price" class="form-control"/>
+                <span asp-validation-for="Game.Price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Image" class="control-label"></label>
+                <input type="file" asp-for="Image" class="form-control"/>
+                <img src="@Model.Game.Image" alt="Изображение игры"/>
+                <span asp-validation-for="Image" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Обновить" class="btn btn-primary"/>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Назад к списку</a>
+</div>
+

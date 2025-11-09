@@ -3,16 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using WEB_353501_Gruganov.API.Data;
 using WEB_353501_Gruganov.Domain.Entities;
 using WEB_353501_Gruganov.Domain.Models;
-using HostingEnvironmentExtensions = Microsoft.Extensions.Hosting.HostingEnvironmentExtensions;
 
-namespace WEB_353501_Gruganov.API.Use_Cases;
+namespace WEB_353501_Gruganov.API.UseCases;
 
 public sealed record GetListOfGames(
     string? genreNormalizedName,
     int pageNo = 1,
     int pageSize = 3) : IRequest<ResponseData<ListModel<Game>>>;
 
-public class GetListOfGamesHandler(AppDbContext context) : IRequestHandler<GetListOfGames, ResponseData<ListModel<Game>>>
+public class GetListOfGamesHandler(AppDbContext context, IHttpContextAccessor httpContextAccessor) : IRequestHandler<GetListOfGames, ResponseData<ListModel<Game>>>
 {
     private readonly int _maxPageSize = 20;
 
@@ -22,6 +21,7 @@ public class GetListOfGamesHandler(AppDbContext context) : IRequestHandler<GetLi
         pageSize = Math.Max(1, pageSize);
 
         var query = context.Games.AsQueryable();
+        query = query.Include(g=>g.Genre);
 
         if (!string.IsNullOrEmpty(request.genreNormalizedName)) {
             query = query.Where(g => g.Genre.NormalizedName == request.genreNormalizedName);
@@ -30,14 +30,27 @@ public class GetListOfGamesHandler(AppDbContext context) : IRequestHandler<GetLi
         int totalItems = await query.CountAsync(cancellationToken);
         int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
         int pageNo = Math.Max(1, Math.Min(totalPages, request.pageNo));
-        var items = await query
+        var games = await query
             .Skip((pageNo - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
+        
+        var httpContext = httpContextAccessor.HttpContext;
+        if (httpContext == null) {
+            return ResponseData<ListModel<Game>>.Error("Не удалось получить HTTP-контекст");
+        }
+        var scheme = httpContext.Request.Scheme;
+        var host = httpContext.Request.Host.Value;
+
+        foreach (var game in games) {
+            if (!string.IsNullOrEmpty(game.Image) && !game.Image.StartsWith("http")) {
+                game.Image = $"{scheme}://{host}/{game.Image}";
+            }
+        }
 
         var listModel = new ListModel<Game>
         {
-            Items = items,
+            Items = games,
             CurrentPage = pageNo,
             TotalPages = totalPages
         };

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using WEB_353501_Gruganov.Models;
 using WEB_353501_Gruganov.UI.Models;
 
 namespace WEB_353501_Gruganov.UI.Controllers;

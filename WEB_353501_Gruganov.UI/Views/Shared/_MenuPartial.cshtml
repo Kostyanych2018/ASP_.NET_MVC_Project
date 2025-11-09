@@ -1,9 +1,7 @@
 @* @model TModel *@
 @{
-   var controller = ViewContext.RouteData.Values["controller"]?
-                       .ToString()?
-                       .ToLower()
-                       ?? String.Empty;
+   var controller = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower()?? String.Empty;
+   var area = ViewContext.RouteData.Values["area"]?.ToString()?.ToLower() ?? string.Empty;
 }
 <div class="navbar-nav">
    <a class="navbar-brand" href="#">353501</a>
@@ -13,7 +11,7 @@
    <a class="nav-item nav-link @(controller == "game" ? "active" : "")"
       asp-controller="Game"
       asp-action="Index">Каталог</a>
-   <a class="nav-item nav-link @(controller == "admin" ? "active" : "")"
+   <a class="nav-item nav-link @(area == "admin" ? "active" : "")"
       asp-area="Admin"
-      asp-page="/Index">Администрирование</a>
+      asp-page="/Games/Index">Администрирование</a>
 </div>

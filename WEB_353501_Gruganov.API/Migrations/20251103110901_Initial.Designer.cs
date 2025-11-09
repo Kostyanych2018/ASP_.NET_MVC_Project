@@ -11,7 +11,7 @@ using WEB_353501_Gruganov.API.Data;
 namespace WEB_353501_Gruganov.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251009210134_Initial")]
+    [Migration("20251103110901_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -33,7 +33,6 @@ namespace WEB_353501_Gruganov.API.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("GenreId")

@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using WEB_353501_Gruganov.API.Use_Cases;
+using WEB_353501_Gruganov.API.UseCases;
 using WEB_353501_Gruganov.Domain.Entities;
 
 namespace WEB_353501_Gruganov.API.EndPoints;
@@ -11,19 +11,58 @@ public static class GameEndpoints
     {
         var group = routes.MapGroup("api/games")
             .WithTags(nameof(Game))
-            .WithOpenApi();
+            .WithOpenApi()
+            .DisableAntiforgery()
+            .RequireAuthorization("admin");
 
-        group.MapGet("/{genreNormalizedName?}", async (
-                IMediator mediator,
+        group.MapGet("/{genreNormalizedName?}", async (IMediator mediator,
                 string? genreNormalizedName,
                 [FromQuery] int pageNo = 1,
                 [FromQuery] int pageSize = 3) =>
             {
                 var query = new GetListOfGames(genreNormalizedName, pageNo, pageSize);
                 var response = await mediator.Send(query);
-                return Results.Ok(response); 
+                return Results.Ok(response);
             })
             .WithName("GetListOfGames")
+            .WithOpenApi()
+            .AllowAnonymous();
+
+        group.MapGet("/{id:int}", async (IMediator mediator, int id) =>
+            {
+                var query = new GetGameById(id);
+                var response = await mediator.Send(query);
+                return response.Successfull
+                    ? Results.Ok(response)
+                    : Results.NotFound(response);
+            })
+            .WithName("GetGameById")
+            .WithOpenApi();
+
+
+        group.MapPost("/", async (IMediator mediator, HttpContext context) =>
+            {
+                var command = new CreateGame(context.Request);
+                var response = await mediator.Send(command);
+                return response;
+            })
+            .WithName("CreateGame")
+            .WithOpenApi();
+
+        group.MapPut("/{id:int}", async (IMediator mediator, HttpContext context) =>
+            {
+                var command = new UpdateGame(context);
+                return await mediator.Send(command);
+            })
+            .WithName("UpdateGame")
+            .WithOpenApi();
+
+        group.MapDelete("/{id:int}", async (IMediator mediator, int id) =>
+            {
+                var command = new DeleteGame(id);
+                return await mediator.Send(command);
+            })
+            .WithName("DeleteGame")
             .WithOpenApi();
     }
 }
