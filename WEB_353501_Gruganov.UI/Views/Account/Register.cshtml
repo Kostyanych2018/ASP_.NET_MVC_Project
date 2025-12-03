@@ -1,0 +1,51 @@
+@model WEB_353501_Gruganov.UI.Models.RegisterUserViewModel
+
+@{
+    ViewData["Title"] = "Регистрация";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <section>
+            <form asp-action="Register" method="post" enctype="multipart/form-data">
+                <h4>Создайте нового пользователя</h4>
+                <hr/>
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" autocomplete="username" aria-required="true"/>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" class="form-control" autocomplete="new-password" aria-required="true"/>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="ConfirmPassword" class="form-label"></label>
+                    <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true"/>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Avatar" class="form-label"></label>
+                    <input asp-for="Avatar" type="file" class="form-control"/>
+                    <span asp-validation-for="Avatar" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Зарегистрироваться</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}

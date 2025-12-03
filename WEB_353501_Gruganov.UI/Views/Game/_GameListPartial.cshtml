@@ -1,0 +1,38 @@
+@model ListModel<Game>
+
+@{
+    var request = ViewContext.HttpContext.Request;
+    var returnUrl = request.Path + request.QueryString.ToUriComponent();
+    string? genreName = request.Query["genre"].ToString();
+}
+
+<div class="row">
+    @foreach (var game in Model.Items) {
+        <div class="col-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <img src="@game.Image" alt="@game.Name"
+                         class="w-100 h-100"/>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">@game.Name</div>
+                    <p class="card-text">@game.Description</p>
+                    <small class="text-secondary">@game.Price BYN</small>
+                </div>
+                <div class="card-footer text-center">
+                    <a asp-controller="Cart"
+                       asp-action="Add"
+                       asp-route-id="@game.Id"
+                       asp-route-returnurl="@returnUrl"
+                       class="btn btn-primary">
+                        Add to cart <i class="bi bi-cart"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<pager current-page="@Model.CurrentPage"
+       total-pages="@Model.TotalPages"
+       genre-name="@genreName"></pager>

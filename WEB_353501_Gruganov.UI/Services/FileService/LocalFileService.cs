@@ -14,7 +14,7 @@ public class LocalFileService(IWebHostEnvironment environment) : IFileService
             await file.CopyToAsync(fileStream);
         }
 
-        var imageUrl = Path.Combine(imagesPath, fileName);
+        var imageUrl = $"/Images/{fileName}";
         return imageUrl;
     }
 }

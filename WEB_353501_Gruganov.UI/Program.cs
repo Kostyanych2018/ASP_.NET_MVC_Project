@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Serilog;
 using WEB_353501_Gruganov.UI;
 using WEB_353501_Gruganov.UI.Extensions;
 using WEB_353501_Gruganov.UI.HelperClasses;
+using WEB_353501_Gruganov.UI.Middleware;
 using WEB_353501_Gruganov.UI.Services.Authentication;
+using WEB_353501_Gruganov.UI.Services.CartService;
 using WEB_353501_Gruganov.UI.Services.GameService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -51,7 +53,21 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("admin",p=>p.RequireRole("POWER-USER"));
 });
 
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
+builder.Services.AddScoped<Cart>(SessionCart.GetCart);
+
+var logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Logging.AddConsole();
+builder.Logging.AddSerilog(logger);
+
+
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment()) {
@@ -60,6 +76,7 @@ if (!app.Environment.IsDevelopment()) {
     app.UseHsts();
 }
 
+app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseHttpsRedirection();
 app.UseRouting();
 
@@ -68,6 +85,8 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
+app.UseSession();
+
 app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}")
@@ -75,5 +94,6 @@ app.MapControllerRoute(
 
 app.MapRazorPages()
     .RequireAuthorization("admin");
+
 
 app.Run();

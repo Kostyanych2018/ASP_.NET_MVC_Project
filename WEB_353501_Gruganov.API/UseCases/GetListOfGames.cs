@@ -13,7 +13,7 @@ public sealed record GetListOfGames(
 
 public class GetListOfGamesHandler(AppDbContext context, IHttpContextAccessor httpContextAccessor) : IRequestHandler<GetListOfGames, ResponseData<ListModel<Game>>>
 {
-    private readonly int _maxPageSize = 20;
+    private readonly int _maxPageSize = 5;
 
     public async Task<ResponseData<ListModel<Game>>> Handle(GetListOfGames request, CancellationToken cancellationToken)
     {
@@ -29,9 +29,12 @@ public class GetListOfGamesHandler(AppDbContext context, IHttpContextAccessor ht
 
         int totalItems = await query.CountAsync(cancellationToken);
         int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-        int pageNo = Math.Max(1, Math.Min(totalPages, request.pageNo));
+        // int pageNo = Math.Max(1, Math.Min(totalPages, request.pageNo));
+        if (request.pageNo > totalPages) {
+            return ResponseData<ListModel<Game>>.Error("Номер страницы превышает максимальный");
+        }
         var games = await query
-            .Skip((pageNo - 1) * pageSize)
+            .Skip((request.pageNo - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
         
@@ -51,7 +54,7 @@ public class GetListOfGamesHandler(AppDbContext context, IHttpContextAccessor ht
         var listModel = new ListModel<Game>
         {
             Items = games,
-            CurrentPage = pageNo,
+            CurrentPage = request.pageNo,
             TotalPages = totalPages
         };
         return ResponseData<ListModel<Game>>.Success(listModel);

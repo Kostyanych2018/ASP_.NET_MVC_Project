@@ -1,5 +1,7 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using WEB_353501_Gruganov.UI.HelperClasses;
@@ -47,7 +49,7 @@ public class AccountController(
             newUser.Attributes.Add("avatar", avatarUrl);
             newUser.Email = user.Email;
             newUser.Username = user.Email;
-            newUser.Credentials.Add(new UserCredentials(){Value = user.Password});
+            newUser.Credentials.Add(new UserCredentials() { Value = user.Password });
 
             var requestUri = $"{options.Value.Host}/admin/realms/{options.Value.Realm}/users";
             var serializerOptions = new JsonSerializerOptions
@@ -57,10 +59,10 @@ public class AccountController(
             var userData = JsonSerializer.Serialize(newUser, serializerOptions);
             HttpContent content = new StringContent(userData, Encoding.UTF8,
                 "application/json");
-            
+
             var response = await httpClient.PostAsync(requestUri, content);
             if (response.IsSuccessStatusCode) {
-                return Redirect(Url.Action("Index", "Home"));
+                return Redirect(Url.Action("Index", "Home")!);
             }
             else {
                 return BadRequest(response.StatusCode);
@@ -68,6 +70,20 @@ public class AccountController(
         }
 
         return View(user);
+    }
+
+    public async Task Login()
+    {
+        await HttpContext.ChallengeAsync("keycloak",
+            new AuthenticationProperties { RedirectUri = Url.Action("Index", "Home") });
+    }
+
+    [HttpPost]
+    public async Task Logout()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await HttpContext.SignOutAsync("keycloak",
+            new AuthenticationProperties { RedirectUri = Url.Action("Index", "Home") });
     }
 }
 

@@ -44,7 +44,7 @@ public class KeycloakTokenAccessor: ITokenAccessor
 
     private async Task<string> GetClientToken()
     {
-        var requestUri = $"{_keycloakData.Value.Host}/realms/{_keycloakData.Value.Realm}/protocol/openidconnect/token";
+        var requestUri = $"{_keycloakData.Value.Host}/realms/{_keycloakData.Value.Realm}/protocol/openid-connect/token";
         HttpContent content = new FormUrlEncodedContent([
             new KeyValuePair<string, string>
                 ("client_id", _keycloakData.Value.ClientId),

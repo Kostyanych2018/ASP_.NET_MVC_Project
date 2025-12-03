@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using WEB_353501_Gruganov.UI.Extensions;
 using WEB_353501_Gruganov.UI.Services.GameService;
 
 namespace WEB_353501_Gruganov.UI.Areas.Admin.Pages.Games
@@ -14,12 +16,18 @@ namespace WEB_353501_Gruganov.UI.Areas.Admin.Pages.Games
 
         public ListModel<Game> Games { get; set; }
 
-        public async Task OnGetAsync(int pageNo = 1, int? pageSize = null)
+        public async Task<IActionResult> OnGetAsync(int pageNo = 1, int? pageSize = null)
         {
             var response = await _gameService.GetGamesListAsync(null,pageNo, pageSize);
             if (response is { Successfull: true, Data: not null }) {
                 Games = response.Data;
             }
+
+            if (Request.IsAjaxRequest()) {
+                return Partial("_GamesTablePartial", this);
+            }
+            
+            return Page();
         }
     }
 }

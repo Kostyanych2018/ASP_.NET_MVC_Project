@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_353501_Gruganov.Domain"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_353501_Gruganov.API", "WEB_353501_Gruganov.API\WEB_353501_Gruganov.API.csproj", "{87AD9FEB-1F1B-43CB-B070-2E90333C56EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_353501_Gruganov.Tests", "WEB_353501_Gruganov.Tests\WEB_353501_Gruganov.Tests.csproj", "{9D49B5C6-292F-4803-8C57-1E700B22F52B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{87AD9FEB-1F1B-43CB-B070-2E90333C56EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87AD9FEB-1F1B-43CB-B070-2E90333C56EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87AD9FEB-1F1B-43CB-B070-2E90333C56EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D49B5C6-292F-4803-8C57-1E700B22F52B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D49B5C6-292F-4803-8C57-1E700B22F52B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D49B5C6-292F-4803-8C57-1E700B22F52B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D49B5C6-292F-4803-8C57-1E700B22F52B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

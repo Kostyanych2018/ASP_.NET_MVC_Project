@@ -1,0 +1,78 @@
+@model Cart
+
+@{
+    ViewData["Title"] = "Ваша корзина";
+    var returnUrl = ViewContext.HttpContext.Request.Path;
+}
+
+
+<h2>@ViewData["Title"]</h2>
+
+@if (Model.CartItems.Any()) {
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table table-striped align-middle">
+                <thead>
+                <tr>
+                    <th colspan="2">Товар</th>
+                    <th class="text-center">Цена</th>
+                    <th class="text-center">Количество</th>
+                    <th class="text-end">Сумма</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.CartItems.Values) {
+                    <tr>
+                        <td>
+                            <img src="@item.Game.Image" alt="@item.Game.Name" class="img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;"/>
+                        </td>
+                        <td>@item.Game.Name</td>
+                        <td class="text-center">@item.Game.Price.ToString("c")</td>
+                        <td class="text-center">@item.Count</td>
+                        <td class="text-end">@((item.Game.Price * item.Count).ToString("c"))</td>
+                        <td>
+                            <form asp-controller="Cart" asp-action="Remove" method="post">
+                                <input type="hidden" name="id" value="@item.Game.Id"/>
+                                <input type="hidden" name="returnUrl" value="@returnUrl"/>
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Удалить
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Итог заказа</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Количество товаров:</span>
+                            <strong>@Model.Count</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Общая стоимость:</span>
+                            <strong>@Model.TotalPrice.ToString("c")</strong>
+                        </li>
+                    </ul>
+                </div>
+                @* <div class="card-footer text-center"> *@
+                @*     <a href="#" class="btn btn-success w-100">Оформить заказ</a> *@
+                @* </div> *@
+            </div>
+        </div>
+    </div>
+}
+else {
+    <div class="text-center mt-5">
+        <h2>Ваша корзина пуста</h2>
+        <a asp-controller="Game" asp-action="Index" class="btn btn-primary">Перейти в каталог</a>
+    </div>
+}

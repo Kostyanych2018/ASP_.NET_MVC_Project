@@ -36,7 +36,7 @@ public class ApiGameService(
 
 
         if (pageNo > 1) {
-            queryParams.Add($"pageNo={pageNo}");
+            queryParams.Add($"pageNo={pageNo}");        
         }
 
         var finalPageSize = pageSize ?? _pageSize;

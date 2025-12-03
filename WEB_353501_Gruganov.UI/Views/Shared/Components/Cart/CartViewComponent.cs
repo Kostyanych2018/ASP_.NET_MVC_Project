@@ -1,12 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
-
 namespace WEB_353501_Gruganov.UI.Views.Shared.Components.Cart;
 
-public class CartViewComponent: ViewComponent
+public class CartViewComponent : ViewComponent
 {
+    private readonly Domain.Models.Cart _cart;
+
+    public CartViewComponent(Domain.Models.Cart cart)
+    {
+        _cart = cart;
+    }
+
     public IViewComponentResult Invoke()
     {
-        return View();
+        return View(_cart);
     }
-    
 }

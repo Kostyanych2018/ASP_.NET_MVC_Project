@@ -37,6 +37,13 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 builder.Services.AddMediatR(configuration => configuration.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddHybridCache();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.InstanceName = "web_353501_gruganov_";
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
+
 var app = builder.Build();
 
 

@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Hybrid;
 using WEB_353501_Gruganov.API.UseCases;
 using WEB_353501_Gruganov.Domain.Entities;
 
@@ -16,12 +17,20 @@ public static class GameEndpoints
             .RequireAuthorization("admin");
 
         group.MapGet("/{genreNormalizedName?}", async (IMediator mediator,
+                HybridCache cache,
                 string? genreNormalizedName,
                 [FromQuery] int pageNo = 1,
                 [FromQuery] int pageSize = 3) =>
             {
+                var cacheKey = $"games_{genreNormalizedName}_{pageNo}_{pageSize}";
                 var query = new GetListOfGames(genreNormalizedName, pageNo, pageSize);
-                var response = await mediator.Send(query);
+                var response = await cache.GetOrCreateAsync(cacheKey, async token => await mediator.Send(query, token),
+                    new HybridCacheEntryOptions()
+                    {
+                        Expiration = TimeSpan.FromMinutes(3),
+                        LocalCacheExpiration = TimeSpan.FromSeconds(35)
+                    });
+
                 return Results.Ok(response);
             })
             .WithName("GetListOfGames")

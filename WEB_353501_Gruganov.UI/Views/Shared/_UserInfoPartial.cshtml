@@ -1,34 +1,51 @@
 @* @model TModel *@
+@{
+    var name = @User
+        .Claims
+        .FirstOrDefault(c => c.Type.Equals("preferred_username", StringComparison.OrdinalIgnoreCase))?
+        .Value;
+    var avatar = @User
+        .Claims
+        .FirstOrDefault(c => c.Type.Equals("avatar", StringComparison.OrdinalIgnoreCase))?
+        .Value;
+    
+}
 
-@await Component.InvokeAsync("Cart")
-<div class="dropdown ms-4 nav-color">
-    <button class="btn btn-secondary dropdown-toggle"
-            type="button" id="dropdownMenuButton"
-            data-bs-toggle="dropdown"
-            aria-expanded="false">
-        User@gmail.com
-        <img src=@Url.Content("~/Images/avatar.png") width="30" alt="UserImage"
-             class="rounded nav-color"/>
-    </button>
-    <ul class="dropdown-menu bg-light"
-        aria-labelledby="dropdownMenuButton">
-        <li>
+@if (User.Identity.IsAuthenticated) {
+    @await Component.InvokeAsync("Cart")
+    <div class="dropdown ms-4 nav-color">
+        <button class="btn btn-secondary dropdown-toggle"
+                type="button" id="dropdownMenuButton"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+            @name
+            <img src=@avatar width="30" alt="UserImage"
+                 class="rounded nav-color"/>
+        </button>
+        <ul class="dropdown-menu bg-light"
+            aria-labelledby="dropdownMenuButton">
+            <li>
             <span class="dropdown-item-text text-dark">
-                <img src=@Url.Content("~/Images/avatar.png")
+                <img src=@Url.Content("~" + avatar)
                      width="50" alt="UserImage" class="rounded"/>
-                user@gmail.com
+                @name
             </span>
-        </li>
-        <li>
-            <hr class="dropdown-divider"/>
-        </li>
-        <li>
-            <form method="post" id="logoutForm" class="form-inline">
-                <button id="logout" type="submit" class="nav-link btn btn-link text-dark"
-                        asp-controller="Account" asp-action="LogOut">
-                    Logout
-                </button>
-            </form>
-        </li>
-    </ul>
-</div>
+            </li>
+            <li>
+                <hr class="dropdown-divider"/>
+            </li>
+            <li>
+                <form method="post" id="logoutForm" class="form-inline">
+                    <button id="logout" type="submit" class="nav-link btn btn-link text-dark"
+                            asp-controller="Account" asp-action="Logout">
+                        Выйти
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+}
+else {
+    <a class="btn btn-primary" asp-controller="Account" asp-action="Register">Регистрация</a>
+    <a class="btn btn-primary" asp-controller="Account" asp-action="Login">Войти</a>
+}
