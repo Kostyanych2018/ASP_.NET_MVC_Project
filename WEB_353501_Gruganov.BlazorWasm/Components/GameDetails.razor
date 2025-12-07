@@ -1,0 +1,47 @@
+@using WEB_353501_Gruganov.Domain.Entities
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h4 class="mb-0">Подробная информация об игре</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                @if (!string.IsNullOrEmpty(Game.Image)) {
+                    <img src="@Game.Image" alt="@Game.Name" class="img-fluid rounded" style="max-width: 100%; height: auto;"/>
+                }
+                else {
+                    <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 300px;">
+                        <span class="text-muted">Нет изображения</span>
+                    </div>
+                }
+            </div>
+            <div class="col-md-8">
+                <h5 class="card-title">@Game.Name</h5>
+                <hr/>
+                <dl class="row">
+                    <dt class="col-sm-4">ID:</dt>
+                    <dd class="col-sm-8">@Game.Id</dd>
+
+                    <dt class="col-sm-4">Название:</dt>
+                    <dd class="col-sm-8">@Game.Name</dd>
+
+                    <dt class="col-sm-4">Описание:</dt>
+                    <dd class="col-sm-8">@(string.IsNullOrEmpty(Game.Description) ? "Не указано" : Game.Description)</dd>
+
+                    <dt class="col-sm-4">Жанр:</dt>
+                    <dd class="col-sm-8">@(Game.Genre?.Name ?? "Не указан")</dd>
+
+                    <dt class="col-sm-4">Цена:</dt>
+                    <dd class="col-sm-8"><strong>@Game.Price.ToString("F2") BYN</strong></dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public Game? Game { get; set; }
+}
+

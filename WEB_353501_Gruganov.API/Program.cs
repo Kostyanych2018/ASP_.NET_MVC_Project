@@ -10,6 +10,15 @@ var authServer = builder.Configuration
     .GetSection("AuthServer")
     .Get<AuthServerData>()!;
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorWasm", policy =>
+        policy.WithOrigins("http://localhost:5198")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
+});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
@@ -19,10 +28,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.RequireHttpsMetadata = false;
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("admin",p=>p.RequireRole("POWER-USER"));
-});
+builder.Services.AddAuthorization(options => { options.AddPolicy("admin", p => p.RequireRole("POWER-USER")); });
 
 builder.Services.AddControllers();
 
@@ -46,8 +52,9 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 var app = builder.Build();
 
-
 await DbInitializer.SeedData(app);
+
+app.UseCors("AllowBlazorWasm");
 
 app.MapControllers();
 

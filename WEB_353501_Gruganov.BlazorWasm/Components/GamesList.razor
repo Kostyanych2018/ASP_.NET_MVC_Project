@@ -1,0 +1,69 @@
+@implements IDisposable
+@inject IDataService DataService
+
+@if (!DataService.Success && !string.IsNullOrEmpty(DataService.ErrorMessage))
+{
+    <div class="alert alert-danger">
+        @DataService.ErrorMessage
+    </div>
+}
+
+@if (DataService.Games == null || DataService.Games.Count == 0)
+{
+    <p><em>Загрузка игр...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Изображение</th>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Жанр</th>
+                <th>Цена</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var game in DataService.Games)
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(game.Image))
+                        {
+                            <img src="@game.Image" alt="@game.Name" style="max-width: 100px; max-height: 100px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <span class="text-muted">Нет изображения</span>
+                        }
+                    </td>
+                    <td>
+                        @game.Name
+                        <button class="btn btn-sm btn-primary ms-2" @onclick="() => OnGameSelected.InvokeAsync(game.Id)" type="button">
+                            Подробнее
+                        </button>
+                    </td>
+                    <td>@game.Description</td>
+                    <td>@(game.Genre?.Name ?? "Не указан")</td>
+                    <td>@game.Price.ToString("F2") BYN</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public EventCallback<int> OnGameSelected { get; set; }
+
+    protected override void OnInitialized()
+    {
+        DataService.DataLoaded += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        DataService.DataLoaded -= StateHasChanged;
+    }
+}

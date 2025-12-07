@@ -14,7 +14,7 @@ public static class GameEndpoints
             .WithTags(nameof(Game))
             .WithOpenApi()
             .DisableAntiforgery()
-            .RequireAuthorization("admin");
+            .RequireAuthorization();
 
         group.MapGet("/{genreNormalizedName?}", async (IMediator mediator,
                 HybridCache cache,
@@ -34,8 +34,7 @@ public static class GameEndpoints
                 return Results.Ok(response);
             })
             .WithName("GetListOfGames")
-            .WithOpenApi()
-            .AllowAnonymous();
+            .WithOpenApi();
 
         group.MapGet("/{id:int}", async (IMediator mediator, int id) =>
             {

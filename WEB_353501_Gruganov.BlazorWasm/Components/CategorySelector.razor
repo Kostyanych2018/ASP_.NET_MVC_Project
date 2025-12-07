@@ -1,0 +1,53 @@
+@inject IDataService DataService
+@using WEB_353501_Gruganov.Domain.Entities
+
+<div class="mb-3">
+    <label class="form-label">Выберите категорию:</label>
+    <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            @(DataService.SelectedGenre?.Name ?? "Все категории")
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a class="dropdown-item @(DataService.SelectedGenre == null ? "active" : "")" href="#" @onclick="()=>SelectCategory(null)" @onclick:preventDefault>
+                    Все категории
+                </a>
+            </li>
+            @foreach (var genre in DataService.Genres)
+            {
+                <li>
+                    <a class="dropdown-item @(DataService.SelectedGenre?.Id == genre.Id ? "active" : "")" href="#" @onclick="() => SelectCategory(genre)" @onclick:preventDefault>
+                        @genre.Name
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+    @if (DataService.SelectedGenre != null)
+    {
+        <div class="mt-2">
+            <small class="text-muted">Текущая категория: <strong>@DataService.SelectedGenre.Name</strong></small>
+        </div>
+    }
+</div>
+
+@code {
+    
+    protected override void OnInitialized()
+    {
+        DataService.DataLoaded += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        DataService.DataLoaded -= StateHasChanged;
+    }
+    
+    private async Task SelectCategory(Genre? genre)
+    {
+        DataService.SelectedGenre = genre;
+        await DataService.GetGamesListAsync();
+        StateHasChanged();
+    }
+}
+

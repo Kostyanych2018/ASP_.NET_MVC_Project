@@ -1,0 +1,28 @@
+@page "/games"
+@using WEB_353501_Gruganov.BlazorWasm.Components
+@using WEB_353501_Gruganov.Domain.Entities
+
+<PageTitle>Menu</PageTitle>
+
+<CategorySelector />
+<GamesList OnGameSelected="HandleGameSelected" />
+<Pagination />
+<GameDetails Game="@selectedGame" />
+
+@code {
+    [Inject] 
+    public IDataService DataService { get; set; } = null!;
+
+    private Game? selectedGame;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DataService.GetGenresListAsync();
+        await DataService.GetGamesListAsync();
+    }
+
+    private void HandleGameSelected(int gameId)
+    {
+        selectedGame = DataService.Games.FirstOrDefault(g=>g.Id == gameId);
+    }
+}

@@ -1,0 +1,53 @@
+﻿@page "/counter/{InitialCount:int?}"
+@using System.ComponentModel.DataAnnotations
+@rendermode InteractiveServer
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+<div class="col-4">
+    <EditForm Model="@counterInput" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+        <div class="input-group mb-3">
+            <InputNumber class="form-control" @bind-Value="counterInput.Count"/>
+            <button type="submit" class="btn btn-primary">Установить</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+
+    public class CounterInput
+    {
+        [Range(1, 10, ErrorMessage = "Счетчик должен быть между 1 и 10")]
+        public int Count { get; set; } = 1;
+    }
+
+    private CounterInput counterInput = new CounterInput();
+
+    [Parameter] public int InitialCount { get; set; }
+
+    private int currentCount = 0;
+
+    protected override void OnInitialized()
+    {
+        currentCount = InitialCount;
+    }
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    private void HandleValidSubmit()
+    {
+        currentCount = counterInput.Count;
+    }
+
+}
