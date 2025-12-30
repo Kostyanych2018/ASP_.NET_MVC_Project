@@ -1,26 +1,22 @@
-# Каталог игр
+# Каталог компьютерных игр
 
 Веб-приложение для управления каталогом компьютерных игр
 
-<div style="text-align: center;">
-  <img src="screenshots/catalog.png" alt="Главная страница каталога" style="max-width: 70%; height: auto; display: block; margin: 0 auto;">
-  <div><em>Каталог игр с фильтрацией по жанрам и пагинацией</em></div>
-</div>
+![Главная страница каталога](screenshots/catalog.png)
+*Каталог игр с фильтрацией по жанрам и пагинацией*
 
-<div style="text-align: center; margin-top: 24px;">
-  <img src="screenshots/cart.png" alt="Корзина покупок" style="max-width: 70%; height: auto; display: block; margin: 0 auto;">
-  <div><em>Корзина с товарами и итоговой суммой</em></div>
-</div>
 
-<div style="text-align: center; margin-top: 24px;">
-  <img src="screenshots/admincatalog.png" alt="Панель администрирования" style="max-width: 70%; height: auto; display: block; margin: 0 auto;">
-  <div><em>Панель администрирования с CRUD операциями</em></div>
-</div>
+![Корзина покупок](screenshots/cart.png)
+*Корзина с товарами и итоговой суммой*
 
-<div style="text-align: center; margin-top: 24px;">
-  <img src="screenshots/admin.png" alt="Профиль пользователя" style="max-width: 70%; height: auto; display: block; margin: 0 auto;">
-  <div><em>Профиль пользователя с меню выхода</em></div>
-</div>
+
+![Администрирование](screenshots/admincatalog.png)
+*Панель администрирования с CRUD операциями*
+
+ 
+![Профиль пользователя](screenshots/admin.png)
+*Профиль пользователя с меню выхода*
+
 
 ### Архитектура (не учитвая Blazor)
 
