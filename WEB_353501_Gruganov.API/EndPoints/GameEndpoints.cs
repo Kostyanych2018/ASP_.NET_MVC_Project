@@ -13,8 +13,8 @@ public static class GameEndpoints
         var group = routes.MapGroup("api/games")
             .WithTags(nameof(Game))
             .WithOpenApi()
-            .DisableAntiforgery()
-            .RequireAuthorization();
+            .DisableAntiforgery();
+            // .RequireAuthorization();
 
         group.MapGet("/{genreNormalizedName?}", async (IMediator mediator,
                 HybridCache cache,
