@@ -33,7 +33,7 @@
 - **PostgreSQL** - реляционная база данных
 - **MediatR** - реализация паттерна CQRS (Command Query Responsibility Segregation)
 - **Keycloak** - аутентификация и авторизация через OpenID Connect (OIDC)
-- **JWT Bearer** - токеновая аутентификация для API
+- **JWT Bearer** - аутентификация через токены для API
 - **Serilog** - структурированное логирование запросов и событий
 
 
