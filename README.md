@@ -61,9 +61,6 @@
 - **Commands** (CreateGame, UpdateGame, DeleteGame) - для изменения данных
 - **Queries** (GetListOfGames, GetGameById) - для получения данных
 
-### Repository Pattern
-Использование Entity Framework Core в качестве абстракции доступа к данным через `AppDbContext`.
-
 ### Dependency Injection
 Полное использование встроенного DI-контейнера ASP.NET Core для управления зависимостями.
 
