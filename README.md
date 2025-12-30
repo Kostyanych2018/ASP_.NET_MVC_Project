@@ -67,12 +67,6 @@
 ### Middleware Pipeline
 Кастомный middleware для логирования HTTP-запросов (`RequestLoggingMiddleware`).
 
-### Service Layer
-Разделение бизнес-логики на сервисы:
-- `IGameService` / `ApiGameService` - работа с играми
-- `IGenreService` / `ApiGenreService` - работа с жанрами
-- `ITokenAccessor` / `KeycloakTokenAccessor` - управление токенами аутентификации
-
 ### База данных
 
 Проект использует **Entity Framework Core** как основной ORM для работы с базой данных **PostgreSQL**:
