@@ -56,18 +56,7 @@
 - Управление жанрами
 - Пагинация и фильтрация в админ-панели
 
-### CQRS (Command Query Responsibility Segregation)
-Разделение операций чтения и записи через библиотеку **MediatR**:
-- **Commands** (CreateGame, UpdateGame, DeleteGame) - для изменения данных
-- **Queries** (GetListOfGames, GetGameById) - для получения данных
-
-### Dependency Injection
-Полное использование встроенного DI-контейнера ASP.NET Core для управления зависимостями.
-
-### Middleware Pipeline
-Кастомный middleware для логирования HTTP-запросов (`RequestLoggingMiddleware`).
-
-### База данных
+## База данных
 
 Проект использует **Entity Framework Core** как основной ORM для работы с базой данных **PostgreSQL**:
 
@@ -81,5 +70,17 @@
 - **Асинхронные операции** - все операции с БД выполняются асинхронно (`ToListAsync()`, `CountAsync()`, `SaveChangesAsync()`, `AddRangeAsync()`)
 - **LINQ запросы** - построение сложных запросов с фильтрацией, сортировкой и пагинацией через LINQ
 - **Инициализация данных** - заполнение БД начальными данными через `DbInitializer.SeedData()` при первом запуске приложения
+  
+---
 
+### CQRS (Command Query Responsibility Segregation)
+Разделение операций чтения и записи через библиотеку **MediatR**:
+- **Commands** (CreateGame, UpdateGame, DeleteGame) - для изменения данных
+- **Queries** (GetListOfGames, GetGameById) - для получения данных
+
+### Dependency Injection
+Полное использование встроенного DI-контейнера ASP.NET Core для управления зависимостями.
+
+### Middleware Pipeline
+Кастомный middleware для логирования HTTP-запросов (`RequestLoggingMiddleware`).
 
