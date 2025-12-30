@@ -13,6 +13,11 @@
 </div>
 
 <div style="text-align: center; margin-top: 24px;">
+  <img src="screenshots/admincatalog.png" alt="Панель администрирования" style="max-width: 70%; height: auto; display: block; margin: 0 auto;">
+  <div><em>Панель администрирования с CRUD операциями</em></div>
+</div>
+
+<div style="text-align: center; margin-top: 24px;">
   <img src="screenshots/admin.png" alt="Профиль пользователя" style="max-width: 70%; height: auto; display: block; margin: 0 auto;">
   <div><em>Профиль пользователя с меню выхода</em></div>
 </div>
