@@ -1,6 +1,6 @@
 using WEB_353501_Gruganov.Domain.Entities;
 
-namespace WEB_353501_Gruganov.BlazorWasm.Services;
+namespace WEB_353501_Gruganov.Blazor.Wasm.Services;
 
 public interface IDataService
 {

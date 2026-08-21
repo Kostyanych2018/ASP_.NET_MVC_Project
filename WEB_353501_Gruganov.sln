@@ -10,7 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_353501_Gruganov.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_353501_Gruganov.Blazor.SSR", "WEB_353501_Gruganov.Blazor.SSR\WEB_353501_Gruganov.Blazor.SSR.csproj", "{713AE35A-A5B2-4C55-BFC8-9525F2B12697}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_353501_Gruganov.BlazorWasm", "WEB_353501_Gruganov.BlazorWasm\WEB_353501_Gruganov.BlazorWasm.csproj", "{433619D5-58C7-4FFD-B5F9-C4883271CC25}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_353501_Gruganov.Blazor.Wasm", "WEB_353501_Gruganov.Blazor.Wasm\WEB_353501_Gruganov.Blazor.Wasm.csproj", "{433619D5-58C7-4FFD-B5F9-C4883271CC25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

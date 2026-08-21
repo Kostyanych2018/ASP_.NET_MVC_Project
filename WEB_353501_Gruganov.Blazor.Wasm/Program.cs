@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using WEB_353501_Gruganov.BlazorWasm;
-using WEB_353501_Gruganov.BlazorWasm.Services;
+using WEB_353501_Gruganov.Blazor.Wasm;
+using WEB_353501_Gruganov.Blazor.Wasm.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 var apiUrl = builder.Configuration.GetSection("Api:Url").Value;

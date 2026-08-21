@@ -18,11 +18,11 @@ public class GameController(IGameService gameService, IGenreService genreService
     {
 
         var genreResponse = await _genreService.GetGenresListAsync();
-        if (!genreResponse.Successfull)
+        if (!genreResponse.Successful)
             return NotFound(genreResponse.Message);
         
         var gameResponse = await _gameService.GetGamesListAsync(genre, pageNo, pageSize);
-        if (!gameResponse.Successfull)
+        if (!gameResponse.Successful)
             return NotFound(gameResponse.Message);
 
         var currentGenre = genreResponse.Data?.FirstOrDefault(g => g.NormalizedName == genre);

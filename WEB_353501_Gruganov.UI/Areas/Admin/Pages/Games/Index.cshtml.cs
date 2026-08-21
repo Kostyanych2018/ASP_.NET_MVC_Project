@@ -19,7 +19,7 @@ namespace WEB_353501_Gruganov.UI.Areas.Admin.Pages.Games
         public async Task<IActionResult> OnGetAsync(int pageNo = 1, int? pageSize = null)
         {
             var response = await _gameService.GetGamesListAsync(null,pageNo, pageSize);
-            if (response is { Successfull: true, Data: not null }) {
+            if (response is { Successful: true, Data: not null }) {
                 Games = response.Data;
             }
 

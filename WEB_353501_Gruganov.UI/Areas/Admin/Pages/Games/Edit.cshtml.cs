@@ -35,7 +35,7 @@ namespace WEB_353501_Gruganov.UI.Areas.Admin.Pages.Games
 
             var game = await _gameService.GetGameByIdAsync(id.Value);
 
-            if (game.Successfull) {
+            if (game.Successful) {
                 Game = game.Data!;
 
                 var genres = await _genreService.GetGenresListAsync();

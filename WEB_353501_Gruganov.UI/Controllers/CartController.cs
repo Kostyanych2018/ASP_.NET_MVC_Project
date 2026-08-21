@@ -25,7 +25,7 @@ public class CartController : Controller
     public async Task<IActionResult> Add(int id, string returnUrl)
     {
         var response = await _gameService.GetGameByIdAsync(id);
-        if (response.Successfull) {
+        if (response.Successful) {
             _cart.AddToCart(response.Data!);
         }
         return Redirect(returnUrl);

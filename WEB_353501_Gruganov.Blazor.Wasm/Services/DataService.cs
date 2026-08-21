@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using WEB_353501_Gruganov.Domain.Entities;
 using WEB_353501_Gruganov.Domain.Models;
 
-namespace WEB_353501_Gruganov.BlazorWasm.Services;
+namespace WEB_353501_Gruganov.Blazor.Wasm.Services;
 
 public class DataService : IDataService
 {
@@ -129,7 +129,7 @@ public class DataService : IDataService
                     var responseData = await response.Content
                         .ReadFromJsonAsync<ResponseData<ListModel<Game>>>(_serializerOptions);
 
-                    if (responseData is { Successfull: true, Data: not null }) {
+                    if (responseData is { Successful: true, Data: not null }) {
                         Games = responseData.Data.Items;
                         TotalPages = responseData.Data.TotalPages;
                         CurrentPage = responseData.Data.CurrentPage;

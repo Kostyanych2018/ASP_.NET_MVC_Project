@@ -26,7 +26,7 @@ namespace WEB_353501_Gruganov.UI.Areas.Admin.Pages.Games
 
             var response = await _gameService.GetGameByIdAsync(id.Value);
 
-            if (response.Successfull)
+            if (response.Successful)
             {
                 Game = response.Data!;
 

@@ -136,7 +136,7 @@ public class ApiGameServiceTests
         Assert.NotNull(result);
         // int totalPages = (int)Math.Ceiling((double)10 / 3);
         // Assert.Equal(totalPages, result.Data.CurrentPage);
-        Assert.False(result.Successfull);
+        Assert.False(result.Successful);
         Assert.Equal("Номер страницы превышает максимальный",result.Message);
     }
 }

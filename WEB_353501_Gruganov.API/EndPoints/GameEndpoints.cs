@@ -40,7 +40,7 @@ public static class GameEndpoints
             {
                 var query = new GetGameById(id);
                 var response = await mediator.Send(query);
-                return response.Successfull
+                return response.Successful
                     ? Results.Ok(response)
                     : Results.NotFound(response);
             })
