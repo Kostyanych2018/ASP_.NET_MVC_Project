@@ -1,11 +1,9 @@
-using System.Runtime.CompilerServices;
-
 namespace WEB_353501_Gruganov.Domain.Models;
 
 public class ResponseData<T>
 {
     public T? Data { get; set; }
-    public bool Successfull { get; set; } = true;
+    public bool Successful { get; set; } = true;
     public string? Message { get; set; }
 
     public static ResponseData<T> Success(T data)
@@ -18,7 +16,7 @@ public class ResponseData<T>
         return new ResponseData<T>
         {
             Data = data,
-            Successfull = true,
+            Successful = true,
             Message = successMessage
         };
     }
@@ -28,7 +26,7 @@ public class ResponseData<T>
         return new ResponseData<T>
         {
             Data = data,
-            Successfull = false,
+            Successful = false,
             Message = errorMessage
         };
     }

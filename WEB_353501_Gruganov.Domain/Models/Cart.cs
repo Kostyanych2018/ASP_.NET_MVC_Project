@@ -8,21 +8,28 @@ public class Cart
 
     public virtual void AddToCart(Game game)
     {
-        if (CartItems.ContainsKey(game.Id)) {
-            ++CartItems[game.Id].Count;
+        if (CartItems.TryGetValue(game.Id, out var item))
+        {
+            ++item.Count;
         }
-        else {
-            CartItems.Add(game.Id, new CartItem() { Count = 1, Game = game });
+        else
+        {
+            CartItems.Add(game.Id, new CartItem { Count = 1, Game = game });
         }
     }
 
     public virtual void RemoveItem(int id)
     {
-        if (CartItems.ContainsKey(id)) {
-            --CartItems[id].Count;
-            if (CartItems[id].Count <= 0) {
-                CartItems.Remove(id);
-            }
+        if (!CartItems.TryGetValue(id, out var item))
+        {
+            return;
+        }
+
+        --item.Count;
+
+        if (item.Count <= 0)
+        {
+            CartItems.Remove(id);
         }
     }
 
