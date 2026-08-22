@@ -1,0 +1,18 @@
+@page "Admin/Catalog"
+@model GameStore.UI.Areas.Admin.Pages.Games.IndexModel
+
+@{
+    ViewData["Title"] = "Admin Index";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <a asp-page="./Create" class="btn btn-primary">Создать</a>
+</p>
+
+<div class="ajax-pagination-container">
+    <partial name="_GamesTablePartial" model="Model"/>
+</div>
+
+    
