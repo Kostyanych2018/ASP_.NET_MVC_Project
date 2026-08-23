@@ -1,4 +1,4 @@
-namespace GameStore.Application.Common.Interfaces;
+namespace GameStore.UI.Services.Authentication;
 
 public interface ITokenAccessor
 {

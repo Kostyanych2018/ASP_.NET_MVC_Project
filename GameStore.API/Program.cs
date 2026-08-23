@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using GameStore.API.Data;
 using GameStore.API.EndPoints;
 using GameStore.API.Models;
+using GameStore.Infrastructure.Data;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,14 +11,7 @@ var authServer = builder.Configuration
     .GetSection("AuthServer")
     .Get<AuthServerData>()!;
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowBlazorWasm", policy =>
-        policy.WithOrigins("http://localhost:5198")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
-});
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
