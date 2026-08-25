@@ -11,6 +11,15 @@ public class ValidationException : Exception
     {
         Errors = new Dictionary<string, string[]>();
     }
+    
+    public ValidationException(string propertyName, string errorMessage)
+        : base(errorMessage)
+    {
+        Errors = new Dictionary<string, string[]>
+        {
+            { propertyName, new[] { errorMessage } }
+        };
+    }
 
     public ValidationException(IEnumerable<ValidationFailure> errors) : this()
     {

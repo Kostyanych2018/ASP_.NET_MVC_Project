@@ -1,12 +1,12 @@
-﻿using GameStore.Application.Common.Interfaces;
+﻿using GameStore.Application.Common.Exceptions;
+using GameStore.Application.Common.Interfaces;
 using GameStore.Application.Games.DTOs;
-using GameStore.Domain.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Application.Games.Queries.GetGameById;
 
-public class GetGameByIdQueryHandler : IRequestHandler<GetGameByIdQuery, ResponseData<GameDto>>
+public class GetGameByIdQueryHandler : IRequestHandler<GetGameByIdQuery, GameDto>
 {
     private readonly IApplicationDbContext _context;
 
@@ -15,12 +15,12 @@ public class GetGameByIdQueryHandler : IRequestHandler<GetGameByIdQuery, Respons
         _context = context;
     }
 
-    public async Task<ResponseData<GameDto>> Handle(GetGameByIdQuery request, CancellationToken cancellationToken)
+    public async Task<GameDto> Handle(GetGameByIdQuery request, CancellationToken cancellationToken)
     {
         var gameDto = await _context.Games
             .AsNoTracking()
             .Where(g => g.Id == request.Id)
-            .Select(g => new GameDto()
+            .Select(g => new GameDto
             {
                 Id = g.Id,
                 Name = g.Name,
@@ -28,16 +28,15 @@ public class GetGameByIdQueryHandler : IRequestHandler<GetGameByIdQuery, Respons
                 Price = g.Price,
                 GenreId = g.GenreId,
                 GenreName = g.Genre == null ? null : g.Genre.Name,
-                Image = g.Image,
+                Image = g.Image
             })
             .FirstOrDefaultAsync(cancellationToken);
 
         if (gameDto == null)
         {
-            return ResponseData<GameDto>.Error(
-                string.Format(GameConstants.ErrorMessages.GameNotFound, request.Id));
+            throw new NotFoundException(string.Format(GameConstants.ErrorMessages.GameNotFound, request.Id));
         }
 
-        return ResponseData<GameDto>.Success(gameDto);
+        return gameDto;
     }
 }

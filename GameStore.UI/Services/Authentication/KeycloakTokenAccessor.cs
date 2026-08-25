@@ -1,65 +1,78 @@
-using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
-using GameStore.UI.HelperClasses;
+using GameStore.UI.Constants;
+using GameStore.UI.Exceptions;
+using GameStore.UI.Settings;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 
 namespace GameStore.UI.Services.Authentication;
 
-public class KeycloakTokenAccessor: ITokenAccessor
+public class KeycloakTokenAccessor : ITokenAccessor
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IOptions<KeycloakData> _keycloakData;
     private readonly HttpClient _httpClient;
-    
-    public KeycloakTokenAccessor(IHttpContextAccessor httpContextAccessor,
-        IOptions<KeycloakData> keycloakData,
-        HttpClient httpClient)
+    private readonly KeycloakSettings _settings;
+    private readonly ILogger<KeycloakTokenAccessor> _logger;
+
+    public KeycloakTokenAccessor(
+        IHttpContextAccessor httpContextAccessor,
+        HttpClient httpClient,
+        IOptions<KeycloakSettings> options,
+        ILogger<KeycloakTokenAccessor> logger)
     {
         _httpContextAccessor = httpContextAccessor;
-        _keycloakData = keycloakData;
         _httpClient = httpClient;
-    }
-    public async Task SetAuthorizationHeaderAsync(HttpClient httpClient, bool isClient)
-    {
-        string token = isClient
-            ? await GetClientToken()
-            : await GetUserToken();
-        
-        httpClient
-            .DefaultRequestHeaders
-            .Authorization =  new AuthenticationHeaderValue("bearer", token);
+        _settings = options.Value;
+        _logger = logger;
     }
 
-    private async Task<string> GetUserToken()
+    public async Task<string?> GetAccessTokenAsync(CancellationToken cancellationToken = default)
     {
-        var context = _httpContextAccessor.HttpContext!;
-        var authSession = await context.AuthenticateAsync("keycloak");
-        if (authSession?.Principal == null) {
-            throw new AuthenticationFailureException("Пользователь неавторизован");
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext == null || httpContext.User.Identity?.IsAuthenticated != true) return null;
+
+        try
+        {
+            var accessToken = await httpContext.GetTokenAsync("access_token");
+            return accessToken;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при получении access_token из HttpContext.");
+            return null;
+        }
+    }
+
+    public async Task<string> GetClientAccessTokenAsync(CancellationToken cancellationToken = default)
+    {
+        var tokenEndpoint = $"{_settings.Host}/realms/{_settings.Realm}/protocol/openid-connect/token";
+
+        var tokenRequestParameters = new Dictionary<string, string>
+        {
+            ["client_id"] = _settings.ClientId,
+            ["client_secret"] = _settings.ClientSecret,
+            ["grant_type"] = AuthConstants.ClientCredentialsGrantType
+        };
+
+        using var requestContent = new FormUrlEncodedContent(tokenRequestParameters);
+        var response = await _httpClient.PostAsync(tokenEndpoint, requestContent, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorDetails = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Не удалось получить сервисный токен Keycloak. Статус: {StatusCode}. Детали: {Error}", response.StatusCode, errorDetails);
+            throw new ApiException(response.StatusCode, null, "Не удалось получить сервисный токен авторизации.");
         }
 
-        return (await context.GetTokenAsync("keycloak", "access_token"))!;
-    }
+        var responseJson = await response.Content.ReadFromJsonAsync<JsonObject>(cancellationToken: cancellationToken);
+        var token = responseJson?["access_token"]?.GetValue<string>();
 
-    private async Task<string> GetClientToken()
-    {
-        var requestUri = $"{_keycloakData.Value.Host}/realms/{_keycloakData.Value.Realm}/protocol/openid-connect/token";
-        HttpContent content = new FormUrlEncodedContent([
-            new KeyValuePair<string, string>
-                ("client_id", _keycloakData.Value.ClientId),
-            new KeyValuePair<string, string>
-                ("grant_type", "client_credentials"),
-            new KeyValuePair<string, string>
-                ("client_secret", _keycloakData.Value.ClientSecret)
-        ]);
-        
-        var response = await _httpClient.PostAsync(requestUri, content);
-        if (!response.IsSuccessStatusCode) {
-            throw new HttpRequestException(response.StatusCode.ToString());
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            throw new ApiException(response.StatusCode, null, "Токен доступа Keycloak пуст.");
         }
-        var responseString = await response.Content.ReadAsStringAsync();
-        return JsonObject.Parse(responseString)["access_token"].GetValue<string>();
-    }
 
+        return token;
+        
+    }
 }

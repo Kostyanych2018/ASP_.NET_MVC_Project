@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Application.Genres.Queries;
 
-public class GetAllGenresQueryHandler : IRequestHandler<GetAllGenresQuery, ResponseData<List<GenreDto>>>
+public class GetAllGenresQueryHandler : IRequestHandler<GetAllGenresQuery, List<GenreDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -15,7 +15,7 @@ public class GetAllGenresQueryHandler : IRequestHandler<GetAllGenresQuery, Respo
         _context = context;
     }
 
-    public async Task<ResponseData<List<GenreDto>>> Handle(
+    public async Task<List<GenreDto>> Handle(
         GetAllGenresQuery request,
         CancellationToken cancellationToken)
     {
@@ -29,6 +29,6 @@ public class GetAllGenresQueryHandler : IRequestHandler<GetAllGenresQuery, Respo
             })
             .ToListAsync(cancellationToken);
 
-        return ResponseData<List<GenreDto>>.Success(genres);
+        return genres;
     }
 }

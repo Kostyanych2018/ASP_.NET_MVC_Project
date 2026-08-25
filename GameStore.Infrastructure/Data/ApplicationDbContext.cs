@@ -9,12 +9,11 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
     public DbSet<Game> Games => Set<Game>();
     public DbSet<Genre> Genres => Set<Genre>();
-    
+
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
-    
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

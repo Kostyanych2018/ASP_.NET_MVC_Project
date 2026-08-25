@@ -1,12 +1,12 @@
-﻿using GameStore.Application.Common.Interfaces;
+﻿using GameStore.Application.Common.Exceptions;
+using GameStore.Application.Common.Interfaces;
 using GameStore.Application.Games.DTOs;
-using GameStore.Domain.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Application.Games.Commands.UpdateGame;
 
-public class UpdateGameCommandHandler : IRequestHandler<UpdateGameCommand, ResponseData<GameDto>>
+public class UpdateGameCommandHandler : IRequestHandler<UpdateGameCommand, GameDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly IFileService _fileService;
@@ -19,15 +19,14 @@ public class UpdateGameCommandHandler : IRequestHandler<UpdateGameCommand, Respo
         _fileService = fileService;
     }
 
-    public async Task<ResponseData<GameDto>> Handle(UpdateGameCommand request, CancellationToken cancellationToken)
+    public async Task<GameDto> Handle(UpdateGameCommand request, CancellationToken cancellationToken)
     {
         var game = await _context.Games
             .FirstOrDefaultAsync(g => g.Id == request.Id, cancellationToken);
 
         if (game == null)
         {
-            return ResponseData<GameDto>
-                .Error(string.Format(GameConstants.ErrorMessages.GameNotFound, request.Id));
+            throw new NotFoundException(string.Format(GameConstants.ErrorMessages.GameNotFound, request.Id));
         }
 
         var genre = await _context.Genres
@@ -35,28 +34,30 @@ public class UpdateGameCommandHandler : IRequestHandler<UpdateGameCommand, Respo
 
         if (genre == null)
         {
-            return ResponseData<GameDto>
-                .Error(string.Format(GameConstants.ErrorMessages.GenreNotFound, request.GenreId));
+            throw new NotFoundException(string.Format(GameConstants.ErrorMessages.GenreNotFound, request.GenreId));
         }
 
         if (request.ImageStream != null && !string.IsNullOrWhiteSpace(request.ImageFileName))
         {
-            if (!string.IsNullOrWhiteSpace(request.ImageFileName))
+            using (request.ImageStream)
             {
-                await _fileService.DeleteFileAsync(request.ImageFileName,cancellationToken);
+                if (!string.IsNullOrWhiteSpace(game.Image))
+                {
+                    await _fileService.DeleteFileAsync(game.Image, cancellationToken);
+                }
+
+                game.Image = await _fileService.SaveFileAsync(
+                    request.ImageStream,
+                    request.ImageFileName,
+                    cancellationToken);
             }
-            
-            game.Image = await _fileService.SaveFileAsync(
-                request.ImageStream,
-                request.ImageFileName,
-                cancellationToken);
         }
-        
+
         game.Name = request.Name;
         game.Description = request.Description;
         game.Price = request.Price;
         game.GenreId = request.GenreId;
-        
+
         await _context.SaveChangesAsync(cancellationToken);
 
         var gameDto = new GameDto()
@@ -69,7 +70,7 @@ public class UpdateGameCommandHandler : IRequestHandler<UpdateGameCommand, Respo
             GenreName = genre.Name,
             Image = game.Image
         };
-        
-        return ResponseData<GameDto>.Success(gameDto);
+
+        return gameDto;
     }
 }

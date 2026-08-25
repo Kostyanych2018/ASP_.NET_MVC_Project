@@ -3,10 +3,11 @@ using GameStore.Application.Games.DTOs;
 using GameStore.Domain.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ValidationException = GameStore.Application.Common.Exceptions.ValidationException;
 
 namespace GameStore.Application.Games.Queries.GetGamesWithPagination;
 
-public class GetGamesWithPaginationQueryHandler : IRequestHandler<GetGamesWithPaginationQuery, ResponseData<ListModel<GameDto>>>
+public class GetGamesWithPaginationQueryHandler : IRequestHandler<GetGamesWithPaginationQuery, ListModel<GameDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -15,7 +16,7 @@ public class GetGamesWithPaginationQueryHandler : IRequestHandler<GetGamesWithPa
         _context = context;
     }
 
-    public async Task<ResponseData<ListModel<GameDto>>> Handle(GetGamesWithPaginationQuery request, CancellationToken cancellationToken)
+    public async Task<ListModel<GameDto>> Handle(GetGamesWithPaginationQuery request, CancellationToken cancellationToken)
     {
         var query = _context.Games.AsNoTracking();
 
@@ -29,9 +30,9 @@ public class GetGamesWithPaginationQueryHandler : IRequestHandler<GetGamesWithPa
         var totalPages = totalItems == 0 ? 1 : (int)Math.Ceiling(totalItems / (double)request.PageSize);
         if (request.PageNo > totalPages && totalItems > 0)
         {
-            return ResponseData<ListModel<GameDto>>.Error(GameConstants.ErrorMessages.PageNumberExceeded);
+            throw new ValidationException(nameof(request.PageNo), GameConstants.ErrorMessages.PageNumberExceeded);
         }
-        
+
         var items = await query
             .OrderBy(g => g.Id)
             .Skip((request.PageNo - 1) * request.PageSize)
@@ -47,14 +48,14 @@ public class GetGamesWithPaginationQueryHandler : IRequestHandler<GetGamesWithPa
                 Image = g.Image
             })
             .ToListAsync(cancellationToken);
-        
+
         var listModel = new ListModel<GameDto>
         {
             Items = items,
             CurrentPage = request.PageNo,
             TotalPages = totalPages
         };
-        
-        return ResponseData<ListModel<GameDto>>.Success(listModel);
+
+        return listModel;
     }
 }

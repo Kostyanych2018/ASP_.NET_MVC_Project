@@ -1,51 +1,65 @@
-using GameStore.UI.Services.GameService;
+using GameStore.Application.Games.DTOs;
+using GameStore.UI.Constants;
+using GameStore.UI.Exceptions;
+using GameStore.UI.Services.Games;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
-namespace GameStore.UI.Areas.Admin.Pages.Games
+namespace GameStore.UI.Areas.Admin.Pages.Games;
+
+[Authorize(Policy = AuthConstants.AdminPolicy)]
+public class DeleteModel : PageModel
 {
-    public class DeleteModel : PageModel
+    private readonly IGameService _gameService;
+    private readonly ILogger<DeleteModel> _logger;
+
+    public DeleteModel(
+        IGameService gameService,
+        ILogger<DeleteModel> logger)
     {
-        private readonly IGameService _gameService;
+        _gameService = gameService;
+        _logger = logger;
+    }
 
-        public DeleteModel(IGameService gameService)
+    [BindProperty] public GameDto Game { get; set; } = new GameDto();
+
+    public async Task<IActionResult> OnGetAsync(int? id, CancellationToken cancellationToken = default)
+    {
+        if (id == null)
         {
-            _gameService = gameService;
-        }
-
-        [BindProperty]
-        public Game Game { get; set; }
-
-        public async Task<IActionResult> OnGetAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var response = await _gameService.GetGameByIdAsync(id.Value);
-
-            if (response.Successful)
-            {
-                Game = response.Data!;
-
-                return Page();
-            }
-
             return NotFound();
         }
 
-        public async Task<IActionResult> OnPostAsync(int? id)
+        try
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            Game = await _gameService.GetGameByIdAsync(id.Value, cancellationToken);
+            return Page();
+        }
+        catch (ApiException ex)
+        {
+            _logger.LogError(ex, "Игра с Id: {GameId} не найдена для удаления.", id);
+            return NotFound();
+        }
+    }
 
-            await _gameService.DeleteGameAsync(id.Value);
+    public async Task<IActionResult> OnPostAsync(int? id, CancellationToken cancellationToken = default)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
 
+        try
+        {
+            await _gameService.DeleteGameAsync(id.Value, cancellationToken);
             return RedirectToPage("./Index");
+        }
+        catch (ApiException ex)
+        {
+            _logger.LogError(ex, "Не удалось удалить игру с Id: {GameId}.", id);
+            ModelState.AddModelError(string.Empty, "Не удалось удалить игру.");
+            return Page();
         }
     }
 }

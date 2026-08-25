@@ -1,5 +1,4 @@
-@model Cart
-
+@model GameStore.UI.Models.Cart.Cart
 @{
     ViewData["Title"] = "Ваша корзина";
     var returnUrl = ViewContext.HttpContext.Request.Path;
@@ -8,7 +7,7 @@
 
 <h2>@ViewData["Title"]</h2>
 
-@if (Model.CartItems.Any()) {
+@if (Model.Items.Any()) {
     <div class="row">
         <div class="col-md-8">
             <table class="table table-striped align-middle">
@@ -22,18 +21,18 @@
                 </tr>
                 </thead>
                 <tbody>
-                @foreach (var item in Model.CartItems.Values) {
+                @foreach (var item in Model.Items.Values) {
                     <tr>
                         <td>
-                            <img src="@item.Game.Image" alt="@item.Game.Name" class="img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;"/>
+                            <img src="@item.Image" alt="@item.GameName" class="img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;"/>
                         </td>
-                        <td>@item.Game.Name</td>
-                        <td class="text-center">@item.Game.Price.ToString("c")</td>
-                        <td class="text-center">@item.Count</td>
-                        <td class="text-end">@((item.Game.Price * item.Count).ToString("c"))</td>
+                        <td>@item.GameName</td>
+                        <td class="text-center">@item.Price</td>
+                        <td class="text-center">@item.Quantity</td>
+                        <td class="text-end">@item.TotalPrice</td>
                         <td>
                             <form asp-controller="Cart" asp-action="Remove" method="post">
-                                <input type="hidden" name="id" value="@item.Game.Id"/>
+                                <input type="hidden" name="id" value="@item.GameId"/>
                                 <input type="hidden" name="returnUrl" value="@returnUrl"/>
                                 <button type="submit" class="btn btn-outline-danger btn-sm">
                                     <i class="bi bi-trash"></i> Удалить
@@ -55,17 +54,14 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between">
                             <span>Количество товаров:</span>
-                            <strong>@Model.Count</strong>
+                            <strong>@Model.TotalItems</strong>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
                             <span>Общая стоимость:</span>
-                            <strong>@Model.TotalPrice.ToString("c")</strong>
+                            <strong>@Model.TotalPrice</strong>
                         </li>
                     </ul>
                 </div>
-                @* <div class="card-footer text-center"> *@
-                @*     <a href="#" class="btn btn-success w-100">Оформить заказ</a> *@
-                @* </div> *@
             </div>
         </div>
     </div>

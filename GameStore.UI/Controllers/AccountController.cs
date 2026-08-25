@@ -1,105 +1,76 @@
-using System.Text;
-using System.Text.Json;
-using GameStore.UI.HelperClasses;
+using GameStore.UI.Constants;
+using GameStore.UI.Exceptions;
+using GameStore.UI.Extensions;
 using GameStore.UI.Models;
 using GameStore.UI.Services.Authentication;
-using GameStore.UI.Services.FileService;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace GameStore.UI.Controllers;
 
-public class AccountController(
-    HttpClient httpClient,
-    IHttpContextAccessor contextAccessor,
-    ITokenAccessor tokenAccessor,
-    IOptions<KeycloakData> options,
-    IFileService fileService) : Controller
+public class AccountController : Controller
 {
-    // GET
+    private readonly IAuthService _authService;
+    private readonly ILogger<AccountController> _logger;
+
+    public AccountController(
+        IAuthService authService,
+        ILogger<AccountController> logger)
+    {
+        _authService = authService;
+        _logger = logger;
+    }
+
+    [HttpGet]
     public IActionResult Register()
     {
         return View(new RegisterUserViewModel());
     }
 
     [HttpPost]
-    [AutoValidateAntiforgeryToken]
-    public async Task<IActionResult> Register(RegisterUserViewModel? user)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(RegisterUserViewModel model, CancellationToken cancellationToken)
     {
-        if (ModelState.IsValid) {
-            if (user == null) {
-                return BadRequest();
-            }
-
-            try {
-                await tokenAccessor.SetAuthorizationHeaderAsync(httpClient, true);
-            }
-            catch (Exception ex) {
-                return Unauthorized();
-            }
-
-            var avatarUrl = "/Images/avatar.png";
-            if (user.Avatar != null) {
-                avatarUrl = await fileService.SaveFileAsync(user.Avatar);
-            }
-
-            var newUser = new CreateUserModel();
-            newUser.Attributes.Add("avatar", avatarUrl);
-            newUser.Email = user.Email;
-            newUser.Username = user.Email;
-            newUser.Credentials.Add(new UserCredentials() { Value = user.Password });
-
-            var requestUri = $"{options.Value.Host}/admin/realms/{options.Value.Realm}/users";
-            var serializerOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-            var userData = JsonSerializer.Serialize(newUser, serializerOptions);
-            HttpContent content = new StringContent(userData, Encoding.UTF8,
-                "application/json");
-
-            var response = await httpClient.PostAsync(requestUri, content);
-            if (response.IsSuccessStatusCode) {
-                return Redirect(Url.Action("Index", "Home")!);
-            }
-            else {
-                return BadRequest(response.StatusCode);
-            }
+        if (!ModelState.IsValid)
+        {
+            return View(model);
         }
 
-        return View(user);
+        try
+        {
+            await _authService.RegisterUserAsync(model, cancellationToken);
+            return RedirectToAction("Index", "Home");
+        }
+        catch (ApiException ex)
+        {
+            _logger.LogWarning(ex, "Ошибка при регистрации пользователя {Email}", model.Email);
+            ModelState.AddApiException(ex);
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Непредвиденная ошибка при регистрации пользователя {Email}", model.Email);
+            ModelState.AddModelError(string.Empty, "Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.");
+            return View(model);
+        }
     }
 
-    public async Task Login()
+    [HttpGet]
+    public async Task Login(string? returnUrl = null)
     {
-        await HttpContext.ChallengeAsync("keycloak",
-            new AuthenticationProperties { RedirectUri = Url.Action("Index", "Home") });
+        var redirectUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Action("Index", "Home");
+
+        await HttpContext.ChallengeAsync(AuthConstants.OpenIdConnectScheme,
+            new AuthenticationProperties { RedirectUri = redirectUrl });
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        await HttpContext.SignOutAsync("keycloak",
+        await HttpContext.SignOutAsync(AuthConstants.OpenIdConnectScheme,
             new AuthenticationProperties { RedirectUri = Url.Action("Index", "Home") });
     }
-}
-
-class CreateUserModel
-{
-    public Dictionary<string, string> Attributes { get; set; } = new();
-    public string Username { get; set; }
-    public string Email { get; set; }
-    public bool Enabled { get; set; } = true;
-    public bool EmailVerified { get; set; } = true;
-    public List<UserCredentials> Credentials { get; set; } = new();
-}
-
-class UserCredentials
-{
-    public string Type { get; set; } = "password";
-    public bool Temporary { get; set; } = false;
-    public string Value { get; set; }
 }

@@ -1,71 +1,77 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using GameStore.API.Data;
-using GameStore.API.EndPoints;
-using GameStore.API.Models;
+using GameStore.API.Common;
+using GameStore.API.Extensions;
+using GameStore.API.Middlewares;
+using GameStore.Application;
+using GameStore.Application.Common.Interfaces;
+using GameStore.Infrastructure;
 using GameStore.Infrastructure.Data;
-
+using GameStore.Infrastructure.Settings;
+using Microsoft.OpenApi.Models;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
-var authServer = builder.Configuration
-    .GetSection("AuthServer")
-    .Get<AuthServerData>()!;
 
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAuthentication(builder.Configuration);
 
+builder.Services.AddScoped<IUserContext, CurrentUserContext>();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-    {
-        // options.MetadataAddress = $"{authServer.Host}/realms/{authServer.Realm}/.wellknown/openid-configuration";
-        options.Authority = $"{authServer.Host}/realms/{authServer.Realm}";
-        options.Audience = "account";
-        options.RequireHttpsMetadata = false;
-    });
-
-builder.Services.AddAuthorization(options => { options.AddPolicy("admin", p => p.RequireRole("POWER-USER")); });
-
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<ExceptionHandlingMiddleware>();
 builder.Services.AddControllers();
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.Configure<FileStorageSettings>(options => { options.BasePath = builder.Environment.WebRootPath; });
 
-var connectionString = builder.Configuration.GetConnectionString("PostgreSQL");
-
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
-
-builder.Services.AddMediatR(configuration => configuration.RegisterServicesFromAssembly(typeof(Program).Assembly));
-builder.Services.AddHttpContextAccessor();
-
-builder.Services.AddHybridCache();
-builder.Services.AddStackExchangeRedisCache(options =>
+builder.Services.AddOpenApi(options =>
 {
-    options.InstanceName = "web_353501_gruganov_";
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Info = new OpenApiInfo()
+        {
+            Title = "GameStore API",
+            Version = "v1",
+            Description = "GameStore ASP .NET Web API with Keycloak"
+        };
+
+        var securityScheme = new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Description = "Enter JWT Bearer token. Example: Bearer eyJhbGciOi...",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT"
+        };
+        document.Components.SecuritySchemes.Add("Bearer", securityScheme);
+        return Task.CompletedTask;
+    });
 });
+
 
 var app = builder.Build();
 
-await DbInitializer.SeedData(app);
-
-app.UseCors("AllowBlazorWasm");
-
-app.MapControllers();
-
-app.UseStaticFiles();
-
-app.MapGenreEndpoints();
-
-app.MapGameEndpoints();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()) {
-    app.MapOpenApi();
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();
+    await initializer.InitializeAsync();
 }
 
+app.UseExceptionHandler();
+app.UseStaticFiles();
 
-// app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference(options =>
+    {
+        options.WithTitle("GameStore API Documentation");
+        options.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+    });
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapControllers();
 app.Run();

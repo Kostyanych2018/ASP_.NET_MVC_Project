@@ -17,6 +17,20 @@ public class DbInitializer
         _logger = logger;
     }
 
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await SeedGenresAsync(cancellationToken);
+            await SeedGamesAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while initializing or seeding the database.");
+            throw;
+        }
+    }
+
     private async Task SeedGenresAsync(CancellationToken cancellationToken)
     {
         if (await _context.Genres.AnyAsync(cancellationToken))
@@ -61,7 +75,7 @@ public class DbInitializer
                 Name = "Total War: Warhammer III",
                 Description = "Стратегия в реальном времени",
                 Price = 149.99m,
-                Image = "/Images/totalwar.png",
+                Image = "Images/totalwar.png",
                 GenreId = strategiesGenre.Id
             },
             new()
@@ -69,7 +83,7 @@ public class DbInitializer
                 Name = "Civilization VI",
                 Description = "Пошаговая стратегия о развитии цивилизации",
                 Price = 119.99m,
-                Image = "/Images/civilizationvi.png",
+                Image = "Images/civilizationvi.png",
                 GenreId = strategiesGenre.Id
             },
             new()
@@ -77,7 +91,7 @@ public class DbInitializer
                 Name = "Stellaris",
                 Description = "Космическая глобальная стратегия",
                 Price = 109.99m,
-                Image = "/Images/stellaris.png",
+                Image = "Images/stellaris.png",
                 GenreId = strategiesGenre.Id
             },
             new()
@@ -85,7 +99,7 @@ public class DbInitializer
                 Name = "Elden Ring",
                 Description = "Экшн-РПГ с открытым миром",
                 Price = 159.99m,
-                Image = "/Images/eldenring.jpg",
+                Image = "Images/eldenring.jpg",
                 GenreId = rpgGenre.Id
             },
             new()
@@ -93,7 +107,7 @@ public class DbInitializer
                 Name = "Cyberpunk 2077",
                 Description = "Научно-фантастическая РПГ",
                 Price = 144.99m,
-                Image = "/Images/cyberpunk2077.jpg",
+                Image = "Images/cyberpunk2077.jpg",
                 GenreId = rpgGenre.Id
             },
             new()
@@ -101,7 +115,7 @@ public class DbInitializer
                 Name = "Valheim",
                 Description = "Выживание в скандинавском стиле",
                 Price = 99.99m,
-                Image = "/Images/valheim.png",
+                Image = "Images/valheim.png",
                 GenreId = survivalGenre.Id
             },
             new()
@@ -109,7 +123,7 @@ public class DbInitializer
                 Name = "The Forest",
                 Description = "Выживание на острове с каннибалами",
                 Price = 49.99m,
-                Image = "/Images/theforest.jpg",
+                Image = "Images/theforest.jpg",
                 GenreId = survivalGenre.Id
             },
             new()
@@ -117,7 +131,7 @@ public class DbInitializer
                 Name = "DOOM Eternal",
                 Description = "Динамичный шутер против демонов",
                 Price = 124.99m,
-                Image = "/Images/doometernal.png",
+                Image = "Images/doometernal.png",
                 GenreId = shooterGenre.Id
             },
             new()
@@ -125,14 +139,14 @@ public class DbInitializer
                 Name = "Counter-Strike 2",
                 Description = "Командный тактический шутер",
                 Price = 0m,
-                Image = "/Images/cs2.jpeg",
+                Image = "Images/cs2.jpeg",
                 GenreId = shooterGenre.Id
             }
         };
 
         await _context.Games.AddRangeAsync(games, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
-        
+
         _logger.LogInformation("Games seeded successfully.");
     }
 }

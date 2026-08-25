@@ -2,5 +2,6 @@ namespace GameStore.UI.Services.Authentication;
 
 public interface ITokenAccessor
 {
-    Task SetAuthorizationHeaderAsync(HttpClient httpClient,bool isClient);
+    Task<string?> GetAccessTokenAsync(CancellationToken cancellationToken = default);
+    Task<string> GetClientAccessTokenAsync(CancellationToken cancellationToken = default);
 }

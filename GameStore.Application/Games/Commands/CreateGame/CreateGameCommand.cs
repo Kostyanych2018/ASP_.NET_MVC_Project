@@ -1,10 +1,9 @@
 ﻿using GameStore.Application.Games.DTOs;
-using GameStore.Domain.Models;
 using MediatR;
 
 namespace GameStore.Application.Games.Commands.CreateGame;
 
-public class CreateGameCommand: IRequest<ResponseData<GameDto>>
+public class CreateGameCommand: IRequest<GameDto>
 {
     public string Name { get; set; }
     public string? Description { get; set; }

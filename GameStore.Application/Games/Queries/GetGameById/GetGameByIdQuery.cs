@@ -4,7 +4,7 @@ using MediatR;
 
 namespace GameStore.Application.Games.Queries.GetGameById;
 
-public class GetGameByIdQuery: IRequest<ResponseData<GameDto>>
+public class GetGameByIdQuery: IRequest<GameDto>
 {
     public int Id { get; set; }
 

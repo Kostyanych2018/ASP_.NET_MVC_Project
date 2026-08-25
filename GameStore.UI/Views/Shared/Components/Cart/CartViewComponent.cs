@@ -3,9 +3,9 @@ namespace GameStore.UI.Views.Shared.Components.Cart;
 
 public class CartViewComponent : ViewComponent
 {
-    private readonly GameStore.Domain.Models.Cart _cart;
+    private readonly Models.Cart.Cart _cart;
 
-    public CartViewComponent(GameStore.Domain.Models.Cart cart)
+    public CartViewComponent(Models.Cart.Cart cart)
     {
         _cart = cart;
     }

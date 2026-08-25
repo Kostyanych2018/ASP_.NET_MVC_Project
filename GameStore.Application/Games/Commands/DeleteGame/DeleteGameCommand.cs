@@ -3,7 +3,7 @@ using MediatR;
 
 namespace GameStore.Application.Games.Commands.DeleteGame;
 
-public class DeleteGameCommand: IRequest<ResponseData<bool>>
+public class DeleteGameCommand: IRequest<bool>
 {
     public int Id { get; set; }
     

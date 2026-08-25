@@ -2,12 +2,12 @@
 @model GameStore.UI.Areas.Admin.Pages.Games.EditModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Редактирование";
 }
 
-<h1>Редактирование</h1>
+<h1>ViewData["Title"]</h1>
 
-<h4>Game</h4>
+<h4>Игра</h4>
 <hr/>
 <div class="row">
     <div class="col-md-4">
@@ -41,11 +41,11 @@
             <div class="form-group">
                 <label asp-for="Image" class="control-label"></label>
                 <input type="file" asp-for="Image" class="form-control"/>
-                <img src="@Model.Game.Image" alt="Изображение игры"/>
+                <img src="@Model.Game.Image" alt="Game image"/>
                 <span asp-validation-for="Image" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Обновить" class="btn btn-primary"/>
+                <input type="submit"  value="Редактировать" class="btn btn-primary"/>
             </div>
         </form>
     </div>

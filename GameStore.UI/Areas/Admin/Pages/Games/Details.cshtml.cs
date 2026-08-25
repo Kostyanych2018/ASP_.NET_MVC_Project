@@ -2,41 +2,49 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GameStore.Application.Games.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using GameStore.Domain.Entities;
-using GameStore.UI.Services.GameService;
-using GameStore.UI;
+using GameStore.UI.Constants;
+using GameStore.UI.Exceptions;
+using GameStore.UI.Services.Games;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GameStore.UI.Areas.Admin.Pages.Games
 {
+    [Authorize(Policy = AuthConstants.AdminPolicy)]
     public class DetailsModel : PageModel
     {
         private readonly IGameService _gameService;
+        private readonly ILogger<DetailsModel> _logger;
 
-        public DetailsModel(IGameService gameService)
+        public DetailsModel(
+            IGameService gameService,
+            ILogger<DetailsModel> logger)
         {
             _gameService = gameService;
+            _logger = logger;
         }
 
-        public Game Game { get; set; }
+        public GameDto Game { get; set; } = new GameDto();
 
-        public async Task<IActionResult> OnGetAsync(int? id)
+        public async Task<IActionResult> OnGetAsync(int? id, CancellationToken cancellationToken = default)
         {
-            if (id == null) {
+            if (id == null)
+            {
                 return NotFound();
             }
 
-            var game = await _gameService.GetGameByIdAsync(id.Value);
-
-            if (game.Successful) {
-                Game = game.Data;
-
+            try
+            {
+                Game = await _gameService.GetGameByIdAsync(id.Value, cancellationToken);
                 return Page();
             }
-
-            return NotFound();
+            catch (ApiException ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении деталей игры Id: {GameId}.", id);
+                return NotFound();
+            }
         }
     }
 }

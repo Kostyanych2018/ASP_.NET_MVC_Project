@@ -1,11 +1,11 @@
-﻿using GameStore.Application.Common.Interfaces;
-using GameStore.Domain.Models;
+﻿using GameStore.Application.Common.Exceptions;
+using GameStore.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Application.Games.Commands.DeleteGame;
 
-public class DeleteGameCommandHandler: IRequestHandler<DeleteGameCommand, ResponseData<bool>>
+public class DeleteGameCommandHandler: IRequestHandler<DeleteGameCommand, bool>
 {
     private readonly IApplicationDbContext _context;
     private readonly IFileService _fileService;
@@ -18,15 +18,14 @@ public class DeleteGameCommandHandler: IRequestHandler<DeleteGameCommand, Respon
         _fileService = fileService;
     }
     
-    public async Task<ResponseData<bool>> Handle(DeleteGameCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(DeleteGameCommand request, CancellationToken cancellationToken)
     {
         var game = await _context.Games
             .FirstOrDefaultAsync(g => g.Id == request.Id, cancellationToken);
 
         if (game == null)
         {
-            return ResponseData<bool>
-                .Error(string.Format(GameConstants.ErrorMessages.GameNotFound, request.Id));
+            throw new NotFoundException(string.Format(GameConstants.ErrorMessages.GameNotFound, request.Id));
         }
         
         if (!string.IsNullOrEmpty(game.Image))
@@ -37,6 +36,6 @@ public class DeleteGameCommandHandler: IRequestHandler<DeleteGameCommand, Respon
         _context.Games.Remove(game);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return ResponseData<bool>.Success(true);
+        return true;
     }
 }

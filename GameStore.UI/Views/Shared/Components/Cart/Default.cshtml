@@ -1,8 +1,8 @@
-@model Cart
+@model GameStore.UI.Models.Cart.Cart
 
 <a class="navbar-text ms-auto"
    asp-controller="Cart"
    asp-action="Index">
     @Model.TotalPrice руб
-    <i class="bi bi-cart"></i>@Model.Count
+    <i class="bi bi-cart"></i>@Model.TotalItems
 </a>

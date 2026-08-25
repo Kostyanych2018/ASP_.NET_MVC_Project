@@ -4,7 +4,7 @@ using MediatR;
 
 namespace GameStore.Application.Games.Commands.UpdateGame;
 
-public class UpdateGameCommand: IRequest<ResponseData<GameDto>>
+public class UpdateGameCommand: IRequest<GameDto>
 {
     public int Id { get; set; }
     public string Name { get; set; }

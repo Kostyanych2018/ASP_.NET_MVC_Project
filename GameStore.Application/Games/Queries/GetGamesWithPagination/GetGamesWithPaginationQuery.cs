@@ -4,7 +4,7 @@ using MediatR;
 
 namespace GameStore.Application.Games.Queries.GetGamesWithPagination;
 
-public class GetGamesWithPaginationQuery : IRequest<ResponseData<ListModel<GameDto>>>
+public class GetGamesWithPaginationQuery : IRequest<ListModel<GameDto>>
 {
     public string? GenreNormalizedName { get; set; }
     public int PageNo { get; set; }

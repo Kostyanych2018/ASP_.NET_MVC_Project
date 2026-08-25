@@ -1,99 +1,106 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Serilog;
-using GameStore.UI;
-using GameStore.UI.Extensions;
-using GameStore.UI.HelperClasses;
-using GameStore.UI.Middleware;
+using System.Security.Claims;
+using GameStore.Infrastructure.Authentication;
+using GameStore.UI.Constants;
+using GameStore.UI.Models.Cart;
 using GameStore.UI.Services.Authentication;
-using GameStore.UI.Services.CartService;
-using GameStore.UI.Services.GameService;
+using GameStore.UI.Services.Cart;
+using GameStore.UI.Services.Games;
+using GameStore.UI.Services.Genres;
+using GameStore.UI.Settings;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 var builder = WebApplication.CreateBuilder(args);
-var uriData = builder.Configuration
-    .GetSection("UriData")
-    .Get<UriData>();
-// Add services to the container.
+builder.Services.Configure<KeycloakSettings>(builder.Configuration.GetSection("Keycloak"));
+
 builder.Services.AddControllersWithViews();
-builder.RegisterCustomServices();
 builder.Services.AddRazorPages();
-
-var keycloakData = builder.Configuration
-    .GetSection("Keycloak")
-    .Get<KeycloakData>()!;
-
-builder.Services.AddHttpClient<IGameService,ApiGameService>(opt=>opt.BaseAddress=new Uri(uriData.ApiUri+"games"));
-builder.Services.AddHttpClient<IGenreService,ApiGenreService>(opt=>opt.BaseAddress=new Uri(uriData.ApiUri+"genres"));
-builder.Services.AddHttpClient<ITokenAccessor, KeycloakTokenAccessor>();
-
 builder.Services.AddHttpContextAccessor();
 
-builder.Services
-    .AddAuthentication(options =>
-    {
-        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = "keycloak";
-    })
-    .AddCookie()
-    .AddOpenIdConnect("keycloak", options =>
-    {
-        options.Authority = $"{keycloakData.Host}/auth/realms/{keycloakData.Realm}";
-        options.ClientId = keycloakData.ClientId;
-        options.ClientSecret = keycloakData.ClientSecret;
-        options.ResponseType = OpenIdConnectResponseType.Code;
-        options.Scope.Add("openid"); 
-        options.SaveTokens = true;
-        options.RequireHttpsMetadata = false; 
-        options.MetadataAddress =
-            $"{keycloakData.Host}/realms/{keycloakData.Realm}/.well-known/openid-configuration";
-    });
-
-builder.Services.AddAuthorization(options =>
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
 {
-    options.AddPolicy("admin",p=>p.RequireRole("POWER-USER"));
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddScoped<Cart>(sp => SessionCart.GetCart(sp));
+builder.Services.AddScoped<ITokenAccessor, KeycloakTokenAccessor>();
+builder.Services.AddTransient<AuthTokenHandler>();
 
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession();
-builder.Services.AddScoped<Cart>(SessionCart.GetCart);
+var apiBaseUrl = builder.Configuration.GetValue<string>("ApiSettings:BaseUrl");
 
-var logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .CreateLogger();
+builder.Services.AddHttpClient<IGenreService, ApiGenreService>(client =>
+    {
+        client.BaseAddress = new Uri($"{apiBaseUrl}/api/genres/"); 
+        
+    })
+    .AddHttpMessageHandler<AuthTokenHandler>();
 
-builder.Logging.AddConsole();
-builder.Logging.AddSerilog(logger);
+builder.Services.AddHttpClient<IGameService, ApiGameService>(client =>
+    {
+        client.BaseAddress = new Uri($"{apiBaseUrl}/api/games/"); 
+        
+    })
+    .AddHttpMessageHandler<AuthTokenHandler>();
 
+builder.Services.AddHttpClient<IAuthService, KeycloakAuthService>();
+
+var keycloakHost = builder.Configuration["Keycloak:Host"];
+var keycloakRealm = builder.Configuration["Keycloak:Realm"];
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = AuthConstants.OpenIdConnectScheme;
+    })
+    .AddOpenIdConnect(AuthConstants.OpenIdConnectScheme, options =>
+    {
+        options.Authority = $"{keycloakHost}/realms/{keycloakRealm}";
+        options.ClientId = builder.Configuration["Keycloak:ClientId"]!;
+        options.ClientSecret = builder.Configuration["Keycloak:ClientSecret"]!;
+        options.ResponseType = OpenIdConnectResponseType.Code;
+        options.RequireHttpsMetadata = false; 
+        options.SaveTokens = true;           
+        options.GetClaimsFromUserInfoEndpoint = true;
+        options.Events = new OpenIdConnectEvents
+        {
+            OnTokenValidated = context =>
+            {
+                var claimsIdentity = context.Principal?.Identity as ClaimsIdentity;
+                claimsIdentity.AddKeycloakRoles();
+                return Task.CompletedTask;
+            }
+        };
+    });
+    
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthConstants.AdminPolicy, policy =>
+        policy.RequireRole(AuthConstants.AdminRole));
+
+    options.AddPolicy(AuthConstants.UserPolicy, policy =>
+        policy.RequireRole(AuthConstants.UserRole));
+});
 
 var app = builder.Build();
 
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment()) {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
-app.UseSession();
-
 app.MapControllerRoute(
-        name: "default",
-        pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.MapRazorPages()
-    .RequireAuthorization("admin");
-
-
+app.MapRazorPages();
 app.Run();
