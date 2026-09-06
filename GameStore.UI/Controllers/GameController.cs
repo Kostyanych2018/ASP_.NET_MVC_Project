@@ -1,15 +1,15 @@
+using GameStore.Application.Common.Models;
 using GameStore.Application.Games.DTOs;
 using GameStore.Application.Genres.DTOs;
+using GameStore.UI.Extensions;
 using GameStore.UI.Exceptions;
 using Microsoft.AspNetCore.Mvc;
-using GameStore.UI.Extensions;
 using GameStore.UI.Models;
 using GameStore.UI.Services.Games;
 using GameStore.UI.Services.Genres;
 
 namespace GameStore.UI.Controllers;
 
-[Route("Catalog")]
 public class GameController : Controller
 {
     private readonly IGameService _gameService;
@@ -27,7 +27,6 @@ public class GameController : Controller
     }
 
     [HttpGet]
-    [Route("{genre?}")]
     public async Task<IActionResult> Index(
         string? genre,
         int? pageSize = null,
@@ -37,7 +36,7 @@ public class GameController : Controller
         try
         {
             var genresTask = _genreService.GetGenresListAsync(cancellationToken);
-            var gamesTask = _gameService.GetGamesListAsync(genre, pageNo, pageSize, cancellationToken);
+            var gamesTask = _gameService.GetGamesListAsync(genre, pageSize, pageNo, cancellationToken);
 
             await Task.WhenAll(genresTask, gamesTask);
 
@@ -45,11 +44,10 @@ public class GameController : Controller
             ListModel<GameDto> games = await gamesTask;
 
             var currentGenre = genres.FirstOrDefault(g => string.Equals(g.NormalizedName, genre, StringComparison.OrdinalIgnoreCase));
-            var currentGenreName = currentGenre?.Name ?? "Все категории";
+            var currentGenreName = currentGenre?.Name ?? "All categories";
 
-            ViewData["Title"] = "Каталог игр";
+            ViewData["Title"] = "Game Catalog";
             ViewData["Genres"] = genres;
-            ViewData["CurrentGenre"] = genre;
             ViewData["CurrentGenreName"] = currentGenreName;
 
             if (Request.IsAjaxRequest())
@@ -61,8 +59,8 @@ public class GameController : Controller
         }
         catch (ApiException ex)
         {
-            _logger.LogError(ex, "Ошибка получения каталога игр.");
-            return View("Error", new ErrorViewModel { Message = "Не удалось загрузить каталог игр." });
+            _logger.LogApiException(ex, "Failed to load game catalog.");
+            return View("Error", new ErrorViewModel { Message = "Failed to load the game catalog." });
         }
     }
 }

@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using GameStore.Application.Common;
+using GameStore.Application.Common.Constants;
 using GameStore.Infrastructure.Authentication;
 using GameStore.UI.Constants;
 using GameStore.UI.Models.Cart;
@@ -13,6 +15,8 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<KeycloakSettings>(builder.Configuration.GetSection("Keycloak"));
+builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
+builder.Services.Configure<UiSettings>(builder.Configuration.GetSection("UiSettings"));
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -27,43 +31,44 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddScoped<Cart>(sp => SessionCart.GetCart(sp));
-builder.Services.AddScoped<ITokenAccessor, KeycloakTokenAccessor>();
+builder.Services.AddHttpClient<ITokenAccessor, KeycloakTokenAccessor>();
 builder.Services.AddTransient<AuthTokenHandler>();
 
-var apiBaseUrl = builder.Configuration.GetValue<string>("ApiSettings:BaseUrl");
+var apiSettings = builder.Configuration.GetSection("ApiSettings").Get<ApiSettings>()!;
+var apiBaseUrl = apiSettings.BaseUrl;
 
 builder.Services.AddHttpClient<IGenreService, ApiGenreService>(client =>
     {
-        client.BaseAddress = new Uri($"{apiBaseUrl}/api/genres/"); 
-        
+        client.BaseAddress = new Uri($"{apiBaseUrl}/api/genres/");
+
     })
     .AddHttpMessageHandler<AuthTokenHandler>();
 
 builder.Services.AddHttpClient<IGameService, ApiGameService>(client =>
     {
-        client.BaseAddress = new Uri($"{apiBaseUrl}/api/games/"); 
-        
+        client.BaseAddress = new Uri($"{apiBaseUrl}/api/games/");
+
     })
     .AddHttpMessageHandler<AuthTokenHandler>();
 
 builder.Services.AddHttpClient<IAuthService, KeycloakAuthService>();
 
-var keycloakHost = builder.Configuration["Keycloak:Host"];
-var keycloakRealm = builder.Configuration["Keycloak:Realm"];
+var keycloakSettings = builder.Configuration.GetSection("Keycloak").Get<KeycloakSettings>()!;
 
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = AuthConstants.OpenIdConnectScheme;
+        options.DefaultChallengeScheme = KeycloakConstants.OpenIdConnectScheme;
     })
-    .AddOpenIdConnect(AuthConstants.OpenIdConnectScheme, options =>
+    .AddCookie()
+    .AddOpenIdConnect(KeycloakConstants.OpenIdConnectScheme, options =>
     {
-        options.Authority = $"{keycloakHost}/realms/{keycloakRealm}";
-        options.ClientId = builder.Configuration["Keycloak:ClientId"]!;
-        options.ClientSecret = builder.Configuration["Keycloak:ClientSecret"]!;
+        options.Authority = $"{keycloakSettings.Host}/realms/{keycloakSettings.Realm}";
+        options.ClientId = keycloakSettings.ClientId;
+        options.ClientSecret = keycloakSettings.ClientSecret;
         options.ResponseType = OpenIdConnectResponseType.Code;
-        options.RequireHttpsMetadata = false; 
-        options.SaveTokens = true;           
+        options.RequireHttpsMetadata = false;
+        options.SaveTokens = true;
         options.GetClaimsFromUserInfoEndpoint = true;
         options.Events = new OpenIdConnectEvents
         {
@@ -75,7 +80,7 @@ builder.Services.AddAuthentication(options =>
             }
         };
     });
-    
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(AuthConstants.AdminPolicy, policy =>

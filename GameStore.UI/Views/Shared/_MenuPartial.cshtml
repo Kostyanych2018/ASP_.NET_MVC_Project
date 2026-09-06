@@ -1,17 +1,27 @@
-@* @model TModel *@
+@using GameStore.Application.Common
+@using GameStore.Application.Common.Constants
 @{
-   var controller = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower()?? String.Empty;
-   var area = ViewContext.RouteData.Values["area"]?.ToString()?.ToLower() ?? string.Empty;
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLowerInvariant() ?? string.Empty;
+    var area = ViewContext.RouteData.Values["area"]?.ToString()?.ToLowerInvariant() ?? string.Empty;
 }
-<div class="navbar-nav">
-   <a class="navbar-brand" href="#">353501</a>
-   <a class="nav-item nav-link @(controller == "home" ? "active" : "")"
-      asp-controller="Home"
-      asp-action="Index">Лб 1</a>
-   <a class="nav-item nav-link @(controller == "game" ? "active" : "")"
-      asp-controller="Game"
-      asp-action="Index">Каталог</a>
-   <a class="nav-item nav-link @(area == "admin" ? "active" : "")"
-      asp-area="Admin"
-      asp-page="/Games/Index">Администрирование</a>
+
+<div class="navbar-nav me-auto mb-2 mb-md-0">
+    <a class="nav-item nav-link @(controller == "home" && string.IsNullOrEmpty(area) ? "active" : "")"
+       asp-controller="Home"
+       asp-action="Index">
+        <i class="bi bi-house-door me-1"></i>Home
+    </a>
+    <a class="nav-item nav-link @(controller == "game" ? "active" : "")"
+       asp-controller="Game"
+       asp-action="Index">
+        <i class="bi bi-grid me-1"></i>Catalog
+    </a>
+    @if (User.IsInRole(AuthConstants.AdminRole))
+    {
+        <a class="nav-item nav-link @(area == "admin" ? "active" : "")"
+           asp-area="Admin"
+           asp-page="/Games/Index">
+            <i class="bi bi-gear me-1"></i>Administration
+        </a>
+    }
 </div>

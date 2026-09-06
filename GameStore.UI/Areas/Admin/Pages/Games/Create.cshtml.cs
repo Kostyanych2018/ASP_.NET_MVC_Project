@@ -1,80 +1,84 @@
+using GameStore.Application.Common;
+using GameStore.Application.Common.Constants;
 using GameStore.Application.Games.DTOs;
-using GameStore.UI.Constants;
+using GameStore.Application.Genres.DTOs;
+using GameStore.UI.Areas.Admin.Pages;
 using GameStore.UI.Exceptions;
-using GameStore.UI.Extensions;
 using GameStore.UI.Services.Games;
 using GameStore.UI.Services.Genres;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace GameStore.UI.Areas.Admin.Pages.Games
+namespace GameStore.UI.Areas.Admin.Pages.Games;
+
+[Authorize(Policy = AuthConstants.AdminPolicy)]
+public class CreateModel : AdminPageModel
 {
-    [Authorize(Policy = AuthConstants.AdminPolicy)]
-    public class CreateModel : PageModel
+    private readonly IGameService _gameService;
+    private readonly IGenreService _genreService;
+
+    public CreateModel(
+        IGameService gameService,
+        IGenreService genreService,
+        ILogger<CreateModel> logger) : base(logger)
     {
-        private readonly IGameService _gameService;
-        private readonly IGenreService _genreService;
-        private readonly ILogger<CreateModel> _logger;
+        _gameService = gameService;
+        _genreService = genreService;
+    }
 
-        public CreateModel(
-            IGameService gameService,
-            IGenreService genreService,
-            ILogger<CreateModel> logger,
-            GameDto game)
+    [BindProperty] public string Name { get; set; } = string.Empty;
+    [BindProperty] public string? Description { get; set; }
+    [BindProperty] public string Price { get; set; } = string.Empty;
+    [BindProperty] public int GenreId { get; set; }
+    [BindProperty] public IFormFile? Image { get; set; }
+
+    public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken = default)
+    {
+        await LoadGenresSelectListAsync(cancellationToken);
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken = default)
+    {
+        if (!PriceParser.TryParse(Price, out var parsedPrice))
         {
-            _gameService = gameService;
-            _genreService = genreService;
-            _logger = logger;
-            Game = game;
-        }
-
-        [BindProperty] public GameDto  Game { get; set; }
-        [BindProperty] public IFormFile? Image { get; set; }
-
-        public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken=default)
-        {
+            ModelState.AddModelError(nameof(Price), "Please enter a valid price (e.g. 149.99 or 149,99).");
             await LoadGenresSelectListAsync(cancellationToken);
             return Page();
         }
 
-
-        // For more information, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken = default)
+        try
         {
-            if (!ModelState.IsValid)
+            var gameDto = new GameDto
             {
-                await LoadGenresSelectListAsync(cancellationToken);
-                return Page();
-            }
+                Name = Name,
+                Description = Description,
+                Price = parsedPrice,
+                GenreId = GenreId
+            };
 
-            try
-            {
-                await _gameService.CreateGameAsync(Game, Image, cancellationToken);
-                return RedirectToPage("./Index");
-            }
-            catch (ApiException ex)
-            {
-                _logger.LogWarning(ex, "Ошибка валидации/создания игры через API.");
-                ModelState.AddApiException(ex);
-                await LoadGenresSelectListAsync(cancellationToken);
-                return Page();
-            }
+            await _gameService.CreateGameAsync(gameDto, Image, cancellationToken);
+            return RedirectToPage("./Index");
         }
-        
-        private async Task LoadGenresSelectListAsync(CancellationToken cancellationToken)
+        catch (ApiException ex)
         {
-            try
-            {
-                var genres = await _genreService.GetGenresListAsync(cancellationToken);
-                ViewData["Genres"] = new SelectList(genres, nameof(GameDto.Id), "Name");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Не удалось загрузить категории для формы создания игры.");
-                ViewData["Genres"] = new SelectList(Enumerable.Empty<SelectListItem>());
-            }
+            await LoadGenresSelectListAsync(cancellationToken);
+            return HandleApiExceptionForForm(ex, "API validation or create game failed.");
+        }
+    }
+
+    private async Task LoadGenresSelectListAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var genres = await _genreService.GetGenresListAsync(cancellationToken);
+            ViewData["Genres"] = new SelectList(genres, nameof(GenreDto.Id), "Name", GenreId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load genres for create game form.");
+            ViewData["Genres"] = new SelectList(Enumerable.Empty<SelectListItem>());
         }
     }
 }

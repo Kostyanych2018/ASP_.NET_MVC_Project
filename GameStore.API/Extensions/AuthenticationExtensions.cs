@@ -1,5 +1,6 @@
-﻿using System.Security.Claims;
-using System.Text.Json;
+﻿using System.Security.Authentication;
+using System.Security.Claims;
+using GameStore.Application.Common.Constants;
 using GameStore.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -28,7 +29,6 @@ public static class AuthenticationExtensions
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidIssuer = authority,
                     ValidateAudience = true,
                     ValidAudience = audience,
                     ValidateLifetime = true,
@@ -40,7 +40,15 @@ public static class AuthenticationExtensions
                     OnTokenValidated = context =>
                     {
                         var claimsIdentity = context.Principal?.Identity as ClaimsIdentity;
-                        claimsIdentity.AddKeycloakRoles();
+                        try
+                        {
+                            claimsIdentity.AddKeycloakRoles();
+                        }
+                        catch (AuthenticationException ex)
+                        {
+                            context.Fail(ex);
+                        }
+
                         return Task.CompletedTask;
                     }
                 };
@@ -48,8 +56,8 @@ public static class AuthenticationExtensions
 
         services.AddAuthorization(options =>
             {
-                options.AddPolicy("admin", policy => policy.RequireRole("admin-game-store"));
-                options.AddPolicy("user", policy => policy.RequireRole("user-game-store"));
+                options.AddPolicy(AuthConstants.AdminPolicy, policy => policy.RequireRole(AuthConstants.AdminRole));
+                options.AddPolicy(AuthConstants.UserPolicy, policy => policy.RequireRole(AuthConstants.UserRole));
             }
         );
 

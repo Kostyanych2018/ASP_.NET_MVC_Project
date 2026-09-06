@@ -65,6 +65,8 @@ secrets.json
 *.env
 .env.*
 !.env.example
+http-client.private.env.json
+**/http-client.private.env.json
 
 # Профили публикации с паролями
 *.pubxml.user
@@ -76,8 +78,14 @@ secrets.json
 # Игнорируем динамически загруженные картинки в API / UI, 
 # но сохраняем дефолтные заглушки
 wwwroot/Images/*
-!wwwroot/Images/default-game.png
+!wwwroot/Images/default_game.png
 !wwwroot/Images/avatar.png
+
+## =========================================================================
+## Claude Code (AI assistant files - not part of the project)
+## =========================================================================
+.claude/
+CLAUDE.md
 
 ## =========================================================================
 ## Operating System Specific Files

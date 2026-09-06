@@ -47,8 +47,8 @@ public static class HttpResponseExtensions
         }
 
         var message = problemDetails?.Detail
-                      ?? problemDetails?.Title
-                      ?? (!string.IsNullOrWhiteSpace(rawContent) ? rawContent : $"Запрос к API завершился неудачно с кодом состояния {response.StatusCode} ({response.ReasonPhrase})");
+                      ?? (!string.IsNullOrWhiteSpace(rawContent) 
+                          ? rawContent : $"API request failed with status code {response.StatusCode} ({response.ReasonPhrase})");
 
         throw new ApiException(response.StatusCode, problemDetails, message);
     }

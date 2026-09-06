@@ -25,7 +25,7 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult Register()
     {
-        return View(new RegisterUserViewModel());
+        return View();
     }
 
     [HttpPost]
@@ -44,14 +44,14 @@ public class AccountController : Controller
         }
         catch (ApiException ex)
         {
-            _logger.LogWarning(ex, "Ошибка при регистрации пользователя {Email}", model.Email);
+            _logger.LogWarning(ex, "Registration failed for user {Email}", model.Email);
             ModelState.AddApiException(ex);
             return View(model);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Непредвиденная ошибка при регистрации пользователя {Email}", model.Email);
-            ModelState.AddModelError(string.Empty, "Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.");
+            _logger.LogError(ex, "Unexpected error during registration for user {Email}", model.Email);
+            ModelState.AddModelError(string.Empty, "Registration failed. Please try again later.");
             return View(model);
         }
     }
@@ -61,7 +61,7 @@ public class AccountController : Controller
     {
         var redirectUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Action("Index", "Home");
 
-        await HttpContext.ChallengeAsync(AuthConstants.OpenIdConnectScheme,
+        await HttpContext.ChallengeAsync(KeycloakConstants.OpenIdConnectScheme,
             new AuthenticationProperties { RedirectUri = redirectUrl });
     }
 
@@ -70,7 +70,7 @@ public class AccountController : Controller
     public async Task Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        await HttpContext.SignOutAsync(AuthConstants.OpenIdConnectScheme,
+        await HttpContext.SignOutAsync(KeycloakConstants.OpenIdConnectScheme,
             new AuthenticationProperties { RedirectUri = Url.Action("Index", "Home") });
     }
 }

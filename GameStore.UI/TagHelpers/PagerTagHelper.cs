@@ -19,12 +19,12 @@ public class PagerTagHelper(LinkGenerator linkGenerator, IHttpContextAccessor ht
         var ul = new TagBuilder("ul");
         ul.AddCssClass("pagination");
 
-        ul.InnerHtml.AppendHtml(GeneratePageLink(CurrentPage - 1, "Предыдущая", CurrentPage == 1));
+        ul.InnerHtml.AppendHtml(GeneratePageLink(CurrentPage - 1, "Previous", disabled: CurrentPage == 1, active: false));
 
         for (int i = 1; i <= TotalPages; i++) {
-            ul.InnerHtml.AppendHtml(GeneratePageLink(i, i.ToString(), i == CurrentPage));
+            ul.InnerHtml.AppendHtml(GeneratePageLink(i, i.ToString(), disabled: false, active: i == CurrentPage));
         }
-        ul.InnerHtml.AppendHtml(GeneratePageLink(CurrentPage + 1, "Следующая", CurrentPage == TotalPages));
+        ul.InnerHtml.AppendHtml(GeneratePageLink(CurrentPage + 1, "Next", disabled: CurrentPage == TotalPages, active: false));
         output.Content.AppendHtml(ul);
     }
 

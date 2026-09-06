@@ -1,0 +1,92 @@
+﻿services:
+  
+  gamestore.api:
+    image: gamestore.api
+    build:
+      context: .
+      dockerfile: GameStore.API/Dockerfile
+    ports:
+      - "5002:8080"
+    environment:
+      ConnectionStrings__PostgreSQL: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__Redis: "redis:6379"
+      AuthServer__Host: "http://keycloak:8080"
+      AuthServer__Realm: "GameStore"
+      AuthServer__Audience: "account"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+
+  gamestore.ui:
+    image: gamestore.ui
+    build:
+      context: .
+      dockerfile: GameStore.UI/Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      ApiSettings__BaseUrl: "http://gamestore.api:8080"
+      Keycloak__Host: "http://keycloak:8080"
+      Keycloak__Realm: "GameStore"
+      Keycloak__ClientId: "game-store-ui"
+      Keycloak__ClientSecret: "${KEYCLOAK_UI_CLIENT_SECRET}"
+    depends_on:
+      gamestore.api:
+        condition: service_started
+      keycloak:
+        condition: service_started
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: gamestore-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  
+  redis:
+    image: redis:7-alpine
+    container_name: gamestore-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.3
+    container_name: gamestore-keycloak
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - "8080:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: "false"
+    volumes:
+      - ./docker/keycloak:/opt/keycloak/data/import:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

@@ -29,6 +29,7 @@ public class GameConfiguration : IEntityTypeConfiguration<Game>
         builder.HasOne(g => g.Genre)
             .WithMany()
             .HasForeignKey(g => g.GenreId)
+            .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

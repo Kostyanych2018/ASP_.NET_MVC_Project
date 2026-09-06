@@ -8,7 +8,7 @@ public static class ModelStateExtensions
 {
     public static void AddApiException(this ModelStateDictionary modelState, ApiException exception)
     {
-        if (exception.ProblemDetails is ValidationProblemDetails validationProblemDetails 
+        if (exception.ProblemDetails is ValidationProblemDetails validationProblemDetails
             && validationProblemDetails.Errors.Count > 0)
         {
             foreach (var (key, errorMessages) in validationProblemDetails.Errors)

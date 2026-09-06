@@ -2,14 +2,9 @@
 
 public class FileStorageSettings
 {
-    public string BasePath { get; set; }
-    public string DefaultImage { get; set; }
-    public string FolderName { get; set; }
-    
-    public FileStorageSettings(string basePath, string defaultImage, string folderName)
-    {
-        BasePath = basePath;
-        DefaultImage = defaultImage;
-        FolderName = folderName;
-    }
+    public string BasePath { get; set; } = string.Empty;
+    public string FolderName { get; set; } = "Images";
+    public string DefaultImage { get; set; } = "Images/default_game.png";
+    public string AvatarsSubFolder { get; set; } = "avatars";
+    public string DefaultAvatar { get; set; } = "Images/avatars/avatar.png";
 }

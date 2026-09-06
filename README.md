@@ -1,86 +1,127 @@
-# Каталог компьютерных игр
+# GameStore
 
-Веб-приложение для управления каталогом компьютерных игр
+Веб-приложение для управления каталогом компьютерных игр: каталог с фильтрацией и пагинацией, корзина покупок, административная панель для CRUD-операций и аутентификация через Keycloak (OpenID Connect).
 
-![Главная страница каталога](screenshots/catalog.png)
-*Каталог игр с фильтрацией по жанрам и пагинацией*
+Построено по принципам **Clean Architecture** (.NET 9)
 
+## Стек технологий
 
-![Корзина покупок](screenshots/cart.png)
-*Корзина с товарами и итоговой суммой*
+**Бэкенд**
+- ASP.NET Core 9 — Web API
+- Entity Framework Core 9 + Npgsql — доступ к данным, PostgreSQL как СУБД
+- MediatR — CQRS (Commands/Queries/Handlers)
+- FluentValidation — валидация команд/запросов
+- HybridCache + StackExchange.Redis — двухуровневое кэширование (in-memory L1 + Redis L2)
+- JWT Bearer / OpenID Connect — аутентификация через Keycloak
+- Scalar (OpenAPI) — интерактивная документация API
 
+**Фронтенд**
+- ASP.NET Core MVC — каталог игр и сессионная корзина
+- Razor Pages (`Areas/Admin`) — административная панель
 
-![Администрирование](screenshots/admincatalog.png)
-*Панель администрирования с CRUD операциями*
+**Инфраструктура**
+- PostgreSQL — основная база данных
+- Redis — кэш
+- Keycloak — Identity Provider (OIDC)
+- Docker Compose — оркестрация всего стека для локального запуска
 
- 
-![Профиль пользователя](screenshots/admin.png)
+## Архитектура и разделение функционала
 
-*Профиль пользователя с меню выхода*
+```
+GameStore.Domain          доменные сущности (Game, Genre), без зависимостей
+        ↑
+GameStore.Application     CQRS через MediatR, DTO, валидация, абстракции
+        ↑                 (IUserContext, ICacheService, IFileService)
+GameStore.Infrastructure  EF Core, миграции, FileService, HybridCacheService,
+        ↑                 KeycloakRoleParser, DbInitializer
+        │
+GameStore.API             REST API, JWT Bearer, тонкие контроллеры (MediatR.Send),
+                           Scalar/OpenAPI
 
+GameStore.Domain ← GameStore.Application
+                          ↑
+                   GameStore.UI          MVC (каталог + корзина) и Razor Pages
+                                          (админка); ходит в API только по HTTP
+```
 
-### Архитектура (не учитвая Blazor)
+### Роли и доступ (Keycloak)
 
-- **WEB_353501_Gruganov.Domain** - доменная модель и бизнес-сущности
-- **WEB_353501_Gruganov.API** - RESTful API 
-- **WEB_353501_Gruganov.UI** - веб-интерфейс на ASP.NET Core MVC и Razor Pages
-- **WEB_353501_Gruganov.Tests** - модульные тесты
+Realm `GameStore`, клиент `game-store-ui` (confidential). Роли:
 
-### Backend
+| Роль | Назначение |
+|---|---|
+| `user-game-store` | Стандартная роль (выдаётся автоматически при регистрации) — доступ к корзине |
+| `admin-game-store` | Назначается вручную в Keycloak — доступ к админ-панели и записи в API |
 
-- **ASP.NET Core 9.0** - основной фреймворк для веб-приложения
-- **Entity Framework Core 9.0** - ORM для работы с базой данных
-- **PostgreSQL** - реляционная база данных
-- **MediatR** - реализация паттерна CQRS (Command Query Responsibility Segregation)
-- **Keycloak** - аутентификация и авторизация через OpenID Connect (OIDC)
-- **JWT Bearer** - аутентификация через токены для API
-- **Serilog** - структурированное логирование запросов
+## Запуск в Docker
 
+Понадобится Docker и Docker Compose.
 
-### Frontend
-- **ASP.NET Core MVC** - серверный рендеринг с Razor Views
-- **Razor Pages** - для административной панели
+1. Скопировать пример переменных окружения:
+   ```bash
+   cp .env.example .env
+   ```
+   При необходимости отредактировать значения (см. раздел ниже).
 
-## Основной функционал
+2. Поднять весь стек:
+   ```bash
+   docker compose up --build
+   ```
 
-### Для пользователей
-- Просмотр каталога игр с фильтрацией по жанрам и пагинацией
-- Добавление товаров в корзину
-- Управление корзиной покупок (добавление/удаление товаров)
-- Аутентификация через Keycloak
+3. После старта будут доступны:
 
-### Для администраторов
-- CRUD операции для управления играми
-- Загрузка и управление изображениями игр
-- Пагинация и фильтрация в админ-панели
+   | Сервис | URL |
+   |---|---|
+   | UI (каталог, корзина, админка) | http://localhost:5001 |
+   | API + Scalar-документация | http://localhost:5002/scalar/v1 |
+   | Keycloak Admin Console | http://localhost:8080 |
+   | PostgreSQL | localhost:5432 |
+   | Redis | localhost:6379 |
 
-## База данных
+4. Зарегистрировать аккаунт через UI (Sign up). Чтобы получить доступ к админ-панели:
+   - зайти в Keycloak Admin Console (логин/пароль — `KC_ADMIN`/`KC_ADMIN_PASSWORD` из `.env`);
+   - в realm `GameStore` найти созданного пользователя и назначить ему роль `admin-game-store` (Role mapping → Assign role).
 
-Проект использует **Entity Framework Core** как основной ORM для работы с базой данных **PostgreSQL**:
+Полный чистый рестарт (со сбросом данных БД):
+```bash
+docker compose down -v
+docker compose up -d --build
+```
 
-- **DbContext** (`AppDbContext`) - централизованный контекст для работы с БД, содержащий `DbSet<Game>` и `DbSet<Genre>`
-- **Сущности**:
-  - `Game` - основная сущность каталога (название, описание, цена, изображение)
-  - `Genre` - жанры игр
-  - `CartItem` - элементы корзины покупок
-- **Связи**:
-  - Связь один-ко-многим: `Game` &rarr; `Genre` (один жанр может включать много игр, но одна
-    игра принадлежит одному жанру)
-- **Загрузка связанных данных** - использование `Include()` для загрузки связанных сущностей (например, `Genre` при загрузке `Game`)
-- **Асинхронные операции** - все операции с БД выполняются асинхронно (`ToListAsync()`, `CountAsync()`, `SaveChangesAsync()`, `AddRangeAsync()`)
-- **LINQ запросы** - построение сложных запросов с фильтрацией, сортировкой и пагинацией через LINQ
-- **Инициализация данных** - заполнение БД начальными данными через `DbInitializer.SeedData()` при первом запуске приложения
-  
----
+## Пример .env-файла
 
-### CQRS (Command Query Responsibility Segregation)
-Разделение операций чтения и записи через библиотеку **MediatR**:
-- **Commands** (CreateGame, UpdateGame, DeleteGame) - для изменения данных
-- **Queries** (GetListOfGames, GetGameById) - для получения данных
+Реальный файл `.env` не коммитится — используйте `.env.example` как шаблон:
 
-### Dependency Injection
-Полное использование встроенного DI-контейнера ASP.NET Core для управления зависимостями.
+```env
+# ---- PostgreSQL ----
+POSTGRES_DB=gamestore
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
 
-### Middleware Pipeline
-Кастомный middleware для логирования HTTP-запросов (`RequestLoggingMiddleware`).
+# ---- Keycloak bootstrap admin (Admin Console: http://localhost:8080) ----
+KC_ADMIN=admin
+KC_ADMIN_PASSWORD=admin123
+
+# ---- Keycloak client secret for game-store-ui ----
+# Must match the "secret" field of the game-store-ui client in
+# docker/keycloak/GameStore-realm.json.
+KEYCLOAK_UI_CLIENT_SECRET=dev-game-store-ui-secret
+```
+
+## Локальный запуск без Docker (опционально)
+
+Для разработки одного из сервисов (например, `GameStore.API`) без пересборки всего стека:
+
+```bash
+dotnet build GameStore.sln
+dotnet run --project GameStore.API
+dotnet run --project GameStore.UI
+```
+
+В этом режиме PostgreSQL/Redis/Keycloak всё равно нужно поднять (например, через `docker compose up -d postgres redis keycloak`), а строки подключения для `GameStore.API`/`GameStore.UI` задаются через User Secrets, а не `appsettings.json`.
+
+Добавление новой EF Core миграции:
+```bash
+dotnet ef migrations add <Name> --project GameStore.Infrastructure --startup-project GameStore.API
+```
 

@@ -1,11 +1,8 @@
-@model ListModel<Game>
+@using GameStore.Application.Genres.DTOs
 
 @{
-    var request = ViewContext.HttpContext.Request;
-    var returnUrl = request.Path + request.QueryString.ToUriComponent();
-    var genres = ViewData["Genres"] as List<Genre>;
+    var genres = ViewData["Genres"] as List<GenreDto>;
     var currentGenreName = ViewData["CurrentGenreName"] as string;
-    string? genreName = request.Query["genre"].ToString();
 }
 <h1>@ViewData["Title"]</h1>
 
@@ -23,17 +20,21 @@
                asp-controller="Game"
                asp-action="Index"
                asp-route-genre="@null">
-                Все категории</a>
+                All categories</a>
         </li>
-        @foreach (var genre in genres) {
-            <li>
-                <a class="dropdown-item"
-                   asp-controller="Game"
-                   asp-action="Index"
-                   asp-route-genre="@genre.NormalizedName">
-                    @genre.Name
-                </a>
-            </li>
+        @if (genres != null && genres.Count > 0)
+        {
+            @foreach (var genre in genres)
+            {
+                <li>
+                    <a class="dropdown-item"
+                       asp-controller="Game"
+                       asp-action="Index"
+                       asp-route-genre="@genre.NormalizedName">
+                        @genre.Name
+                    </a>
+                </li>
+            }
         }
     </ul>
 </div>
@@ -41,8 +42,3 @@
 <div class="ajax-pagination-container">
     <partial name="_GameListPartial" model="Model"/>
 </div>
-
-
-
-
-

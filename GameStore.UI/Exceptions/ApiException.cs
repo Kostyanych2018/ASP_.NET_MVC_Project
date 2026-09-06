@@ -14,8 +14,7 @@ public class ApiException : Exception
         string? message = null)
         : base(message ??
                problemDetails?.Detail ??
-               problemDetails?.Title ??
-               $"Запрос к API завершился неудачно с кодом состояния {statusCode}")
+               $"API request failed with status code {statusCode}")
     {
         StatusCode = statusCode;
         ProblemDetails = problemDetails;

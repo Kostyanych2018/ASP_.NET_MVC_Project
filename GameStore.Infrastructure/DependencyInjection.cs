@@ -27,8 +27,10 @@ public static class DependencyInjection
 
         services.Configure<FileStorageSettings>(options =>
         {
-            options.DefaultImage = configuration["DefaultGameImage"] ?? "Images/default_game.png";
-            options.FolderName = configuration["FolderName"] ?? "Images";
+            options.FolderName = configuration["FileStorage:FolderName"] ?? options.FolderName;
+            options.DefaultImage = configuration["FileStorage:DefaultImage"] ?? options.DefaultImage;
+            options.AvatarsSubFolder = configuration["FileStorage:AvatarsSubFolder"] ?? options.AvatarsSubFolder;
+            options.DefaultAvatar = configuration["FileStorage:DefaultAvatar"] ?? options.DefaultAvatar;
         });
 
         services.AddScoped<IFileService, FileService>();
@@ -48,6 +50,7 @@ public static class DependencyInjection
                 LocalCacheExpiration = TimeSpan.FromMinutes(1)
             };
         });
+        services.AddScoped<ICacheService, HybridCacheService>();
 
         return services;
     }

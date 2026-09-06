@@ -3,10 +3,10 @@ using GameStore.Application.Common.Interfaces;
 
 namespace GameStore.API.Common;
 
-public class CurrentUserContext: IUserContext
+public class UserContext: IUserContext
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    public CurrentUserContext(IHttpContextAccessor httpContextAccessor)
+    public UserContext(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
     }
@@ -29,4 +29,6 @@ public class CurrentUserContext: IUserContext
     }
 
     public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+
+    public bool IsInRole(string role) => _httpContextAccessor.HttpContext?.User.IsInRole(role) ?? false;
 }

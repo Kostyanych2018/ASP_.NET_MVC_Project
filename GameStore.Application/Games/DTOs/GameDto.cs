@@ -8,5 +8,5 @@ public class GameDto
     public decimal Price { get; set; }
     public string? Image { get; set; }
     public int GenreId { get; set; }
-    public string? GenreName { get; set; }
+    public string GenreName { get; set; } = string.Empty;
 }

@@ -39,21 +39,17 @@ public class UpdateGameCommandValidator: AbstractValidator<UpdateGameCommand>
         When(x => x.ImageStream != null && !string.IsNullOrWhiteSpace(x.ImageFileName), () =>
         {
             RuleFor(x => x.ImageFileName)
-                .Must(HaveValidImageExtension)
+                .Must(GameConstants.IsAllowedImageExtension)
                 .WithMessage(string.Format(
                     GameConstants.ErrorMessages.InvalidImageFormat,
                     string.Join(", ", GameConstants.AllowedImageExtensions)));
+
+            RuleFor(x => x.ImageFileSize)
+                .NotNull()
+                .LessThanOrEqualTo(GameConstants.MaxImageFileSizeBytes)
+                .WithMessage(string.Format(
+                    GameConstants.ErrorMessages.InvalidImageSize,
+                    GameConstants.MaxImageFileSizeBytes / (1024 * 1024)));
         });
-    }
-
-    private bool HaveValidImageExtension(string? fileName)
-    {
-        if (string.IsNullOrWhiteSpace(fileName))
-        {
-            return false;
-        }
-
-        var extension = Path.GetExtension(fileName).ToLowerInvariant();
-        return GameConstants.AllowedImageExtensions.Contains(extension);
     }
 }

@@ -1,5 +1,4 @@
-﻿using GameStore.Domain.Models;
-using MediatR;
+﻿using MediatR;
 
 namespace GameStore.Application.Games.Commands.DeleteGame;
 

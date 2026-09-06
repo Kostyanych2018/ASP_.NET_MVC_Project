@@ -1,10 +1,13 @@
-﻿using GameStore.Application.Games.Commands.CreateGame;
+﻿using GameStore.API.Mapping;
+using GameStore.API.Models.Forms;
+using GameStore.Application.Common.Constants;
+using GameStore.Application.Common.Models;
+using GameStore.Application.Games;
 using GameStore.Application.Games.Commands.DeleteGame;
-using GameStore.Application.Games.Commands.UpdateGame;
 using GameStore.Application.Games.DTOs;
 using GameStore.Application.Games.Queries.GetGameById;
 using GameStore.Application.Games.Queries.GetGamesWithPagination;
-using GameStore.Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameStore.API.Controllers;
@@ -14,9 +17,9 @@ public class GamesController : BaseApiController
     [HttpGet]
     [ProducesResponseType(typeof(ListModel<GameDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ListModel<GameDto>>> GetGames(
-        string? genre,
-        int pageNo = 1,
-        int pageSize = 3,
+        [FromQuery] string? genre,
+        [FromQuery] int pageNo = 1,
+        [FromQuery] int pageSize = 3,
         CancellationToken cancellationToken = default)
     {
         var query = new GetGamesWithPaginationQuery(genre, pageNo, pageSize);
@@ -26,7 +29,7 @@ public class GamesController : BaseApiController
 
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(GameDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<GameDto>> GetById(
         int id,
         CancellationToken cancellationToken)
@@ -38,79 +41,75 @@ public class GamesController : BaseApiController
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthConstants.AdminPolicy)]
+    [RequestSizeLimit(GameConstants.MaxImageFileSizeBytes)]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(GameDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<GameDto>> Create(
-        string name,
-        string? description,
-        decimal price,
-        int genreId,
-        IFormFile? file,
+        [FromForm] CreateGameFormRequest request,
         CancellationToken cancellationToken)
     {
-        Stream? imageStream = null;
-        string? fileName = null;
-
-        if (file != null && file.Length > 0)
+        var mapResult = GameFormMapper.ToCreateCommand(request);
+        if (!mapResult.IsSuccess)
         {
-            imageStream = file.OpenReadStream();
-            fileName = file.FileName;
+            return ValidationProblem(mapResult.ValidationError!);
         }
 
-        var command = new CreateGameCommand(
-            name,
-            description,
-            price,
-            genreId,
-            imageStream,
-            fileName);
-
-        var result = await Sender.Send(command, cancellationToken);
-
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        Stream? imageStream = mapResult.Command!.ImageStream;
+        try
+        {
+            var result = await Sender.Send(mapResult.Command, cancellationToken);
+            imageStream = null;
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        finally
+        {
+            imageStream?.Dispose();
+        }
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Policy = AuthConstants.AdminPolicy)]
+    [RequestSizeLimit(GameConstants.MaxImageFileSizeBytes)]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(GameDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<GameDto>> Update(
         int id,
-        string name,
-        string? description,
-        decimal price,
-        int genreId,
-        IFormFile? file,
+        [FromForm] UpdateGameFormRequest request,
         CancellationToken cancellationToken)
     {
-        Stream? imageStream = null;
-        string? fileName = null;
-
-        if (file != null && file.Length > 0)
+        var mapResult = GameFormMapper.ToUpdateCommand(id, request);
+        if (!mapResult.IsSuccess)
         {
-            imageStream = file.OpenReadStream();
-            fileName = file.FileName;
+            return ValidationProblem(mapResult.ValidationError!);
         }
 
-        var command = new UpdateGameCommand(
-            id,
-            name,
-            description,
-            price,
-            genreId,
-            imageStream,
-            fileName);
-
-        var result = await Sender.Send(command, cancellationToken);
-
-        return Ok(result);
+        Stream? imageStream = mapResult.Command!.ImageStream;
+        try
+        {
+            var result = await Sender.Send(mapResult.Command, cancellationToken);
+            imageStream = null;
+            return Ok(result);
+        }
+        finally
+        {
+            imageStream?.Dispose();
+        }
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = AuthConstants.AdminPolicy)]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<bool>> Delete(
         int id,
         CancellationToken cancellationToken)

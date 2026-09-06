@@ -1,50 +1,43 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using GameStore.Application.Games.DTOs;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using GameStore.UI.Constants;
+using GameStore.Application.Common;
+using GameStore.Application.Common.Constants;
+using GameStore.UI.Areas.Admin.Pages;
 using GameStore.UI.Exceptions;
 using GameStore.UI.Services.Games;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace GameStore.UI.Areas.Admin.Pages.Games
+namespace GameStore.UI.Areas.Admin.Pages.Games;
+
+[Authorize(Policy = AuthConstants.AdminPolicy)]
+public class DetailsModel : AdminPageModel
 {
-    [Authorize(Policy = AuthConstants.AdminPolicy)]
-    public class DetailsModel : PageModel
-    {
-        private readonly IGameService _gameService;
-        private readonly ILogger<DetailsModel> _logger;
+    private readonly IGameService _gameService;
 
-        public DetailsModel(
-            IGameService gameService,
-            ILogger<DetailsModel> logger)
+    public DetailsModel(
+        IGameService gameService,
+        ILogger<DetailsModel> logger) : base(logger)
+    {
+        _gameService = gameService;
+    }
+
+    public GameDto Game { get; set; } = new();
+
+    public async Task<IActionResult> OnGetAsync(int? id, CancellationToken cancellationToken = default)
+    {
+        if (id == null)
         {
-            _gameService = gameService;
-            _logger = logger;
+            return NotFound();
         }
 
-        public GameDto Game { get; set; } = new GameDto();
-
-        public async Task<IActionResult> OnGetAsync(int? id, CancellationToken cancellationToken = default)
+        try
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            try
-            {
-                Game = await _gameService.GetGameByIdAsync(id.Value, cancellationToken);
-                return Page();
-            }
-            catch (ApiException ex)
-            {
-                _logger.LogError(ex, "Ошибка при получении деталей игры Id: {GameId}.", id);
-                return NotFound();
-            }
+            Game = await _gameService.GetGameByIdAsync(id.Value, cancellationToken);
+            return Page();
+        }
+        catch (ApiException ex)
+        {
+            return HandleApiExceptionNotFound(ex, "Failed to load game details for Id: {GameId}.", id);
         }
     }
 }

@@ -11,6 +11,7 @@ public class CreateGameCommand: IRequest<GameDto>
     public int GenreId { get; set; }
     public Stream? ImageStream { get; set; }
     public string? ImageFileName { get; set; }
+    public long? ImageFileSize { get; set; }
     
     public CreateGameCommand(
         string name,
@@ -18,7 +19,8 @@ public class CreateGameCommand: IRequest<GameDto>
         decimal price,
         int genreId,
         Stream? imageStream = null,
-        string? imageFileName = null)
+        string? imageFileName = null,
+        long? imageFileSize = null)
     {
         Name = name;
         Description = description;
@@ -26,5 +28,6 @@ public class CreateGameCommand: IRequest<GameDto>
         GenreId = genreId;
         ImageStream = imageStream;
         ImageFileName = imageFileName;
+        ImageFileSize = imageFileSize;
     }
 }

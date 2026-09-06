@@ -1,4 +1,4 @@
-namespace GameStore.Domain.Models;
+namespace GameStore.Application.Common.Models;
 
 public class ListModel<T>
 {

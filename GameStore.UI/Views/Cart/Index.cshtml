@@ -1,9 +1,8 @@
+@using GameStore.UI.Extensions
 @model GameStore.UI.Models.Cart.Cart
 @{
-    ViewData["Title"] = "Ваша корзина";
-    var returnUrl = ViewContext.HttpContext.Request.Path;
+    ViewData["Title"] = "Your Cart";
 }
-
 
 <h2>@ViewData["Title"]</h2>
 
@@ -13,10 +12,10 @@
             <table class="table table-striped align-middle">
                 <thead>
                 <tr>
-                    <th colspan="2">Товар</th>
-                    <th class="text-center">Цена</th>
-                    <th class="text-center">Количество</th>
-                    <th class="text-end">Сумма</th>
+                    <th colspan="2">Product</th>
+                    <th class="text-center">Price</th>
+                    <th class="text-center">Quantity</th>
+                    <th class="text-end">Total</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -24,7 +23,7 @@
                 @foreach (var item in Model.Items.Values) {
                     <tr>
                         <td>
-                            <img src="@item.Image" alt="@item.GameName" class="img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;"/>
+                            <img src="@Url.ApiImage(item.Image)" alt="@item.GameName" class="img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;"/>
                         </td>
                         <td>@item.GameName</td>
                         <td class="text-center">@item.Price</td>
@@ -33,9 +32,8 @@
                         <td>
                             <form asp-controller="Cart" asp-action="Remove" method="post">
                                 <input type="hidden" name="id" value="@item.GameId"/>
-                                <input type="hidden" name="returnUrl" value="@returnUrl"/>
                                 <button type="submit" class="btn btn-outline-danger btn-sm">
-                                    <i class="bi bi-trash"></i> Удалить
+                                    <i class="bi bi-trash"></i> Remove
                                 </button>
                             </form>
                         </td>
@@ -48,16 +46,16 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h4>Итог заказа</h4>
+                    <h4>Order Summary</h4>
                 </div>
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between">
-                            <span>Количество товаров:</span>
+                            <span>Items:</span>
                             <strong>@Model.TotalItems</strong>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
-                            <span>Общая стоимость:</span>
+                            <span>Total:</span>
                             <strong>@Model.TotalPrice</strong>
                         </li>
                     </ul>
@@ -68,7 +66,7 @@
 }
 else {
     <div class="text-center mt-5">
-        <h2>Ваша корзина пуста</h2>
-        <a asp-controller="Game" asp-action="Index" class="btn btn-primary">Перейти в каталог</a>
+        <h2>Your cart is empty</h2>
+        <a asp-controller="Game" asp-action="Index" class="btn btn-primary">Browse catalog</a>
     </div>
 }

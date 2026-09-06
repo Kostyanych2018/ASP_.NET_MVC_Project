@@ -21,6 +21,8 @@ public class DbInitializer
     {
         try
         {
+            await _context.Database.MigrateAsync(cancellationToken);
+            
             await SeedGenresAsync(cancellationToken);
             await SeedGamesAsync(cancellationToken);
         }
@@ -40,10 +42,10 @@ public class DbInitializer
 
         var genres = new List<Genre>
         {
-            new() { Name = "Стратегии", NormalizedName = "strategies" },
-            new() { Name = "Ролевые игры (RPG)", NormalizedName = "rpg" },
-            new() { Name = "Выживание", NormalizedName = "survival" },
-            new() { Name = "Шутер", NormalizedName = "shooter" }
+            new() { Name = "Strategy", NormalizedName = "strategies" },
+            new() { Name = "Role-Playing Games (RPG)", NormalizedName = "rpg" },
+            new() { Name = "Survival", NormalizedName = "survival" },
+            new() { Name = "Shooter", NormalizedName = "shooter" }
         };
         await _context.Genres.AddRangeAsync(genres, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
@@ -73,7 +75,7 @@ public class DbInitializer
             new()
             {
                 Name = "Total War: Warhammer III",
-                Description = "Стратегия в реальном времени",
+                Description = "Real-time strategy game",
                 Price = 149.99m,
                 Image = "Images/totalwar.png",
                 GenreId = strategiesGenre.Id
@@ -81,7 +83,7 @@ public class DbInitializer
             new()
             {
                 Name = "Civilization VI",
-                Description = "Пошаговая стратегия о развитии цивилизации",
+                Description = "Turn-based civilization building strategy",
                 Price = 119.99m,
                 Image = "Images/civilizationvi.png",
                 GenreId = strategiesGenre.Id
@@ -89,7 +91,7 @@ public class DbInitializer
             new()
             {
                 Name = "Stellaris",
-                Description = "Космическая глобальная стратегия",
+                Description = "Grand space strategy game",
                 Price = 109.99m,
                 Image = "Images/stellaris.png",
                 GenreId = strategiesGenre.Id
@@ -97,7 +99,7 @@ public class DbInitializer
             new()
             {
                 Name = "Elden Ring",
-                Description = "Экшн-РПГ с открытым миром",
+                Description = "Open-world action RPG",
                 Price = 159.99m,
                 Image = "Images/eldenring.jpg",
                 GenreId = rpgGenre.Id
@@ -105,7 +107,7 @@ public class DbInitializer
             new()
             {
                 Name = "Cyberpunk 2077",
-                Description = "Научно-фантастическая РПГ",
+                Description = "Sci-fi role-playing game",
                 Price = 144.99m,
                 Image = "Images/cyberpunk2077.jpg",
                 GenreId = rpgGenre.Id
@@ -113,7 +115,7 @@ public class DbInitializer
             new()
             {
                 Name = "Valheim",
-                Description = "Выживание в скандинавском стиле",
+                Description = "Viking-themed survival game",
                 Price = 99.99m,
                 Image = "Images/valheim.png",
                 GenreId = survivalGenre.Id
@@ -121,7 +123,7 @@ public class DbInitializer
             new()
             {
                 Name = "The Forest",
-                Description = "Выживание на острове с каннибалами",
+                Description = "Survival on a cannibal-infested island",
                 Price = 49.99m,
                 Image = "Images/theforest.jpg",
                 GenreId = survivalGenre.Id
@@ -129,7 +131,7 @@ public class DbInitializer
             new()
             {
                 Name = "DOOM Eternal",
-                Description = "Динамичный шутер против демонов",
+                Description = "Fast-paced demon-slaying shooter",
                 Price = 124.99m,
                 Image = "Images/doometernal.png",
                 GenreId = shooterGenre.Id
@@ -137,7 +139,7 @@ public class DbInitializer
             new()
             {
                 Name = "Counter-Strike 2",
-                Description = "Командный тактический шутер",
+                Description = "Team-based tactical shooter",
                 Price = 0m,
                 Image = "Images/cs2.jpeg",
                 GenreId = shooterGenre.Id

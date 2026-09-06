@@ -40,8 +40,7 @@ public static class KeycloakRoleParser
         }
         catch (JsonException ex)
         {
-            throw new AuthenticationException(
-                $"Ошибка парсинга ролей Keycloak: клейм '{RealmAccessClaimType}' содержит невалидный JSON.", ex);
+            throw new AuthenticationException($"Failed to parse Keycloak roles: claim '{RealmAccessClaimType}' contains invalid JSON.", ex);
         }
     }
 }

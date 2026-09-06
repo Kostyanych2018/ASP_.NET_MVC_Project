@@ -1,3 +1,4 @@
+using GameStore.Application.Common.Models;
 using GameStore.Application.Games.DTOs;
 
 namespace GameStore.UI.Services.Games;
@@ -6,8 +7,8 @@ public interface IGameService
 {
     public Task<ListModel<GameDto>> GetGamesListAsync(
         string? genreNormalizedName,
-        int pageNo = 1,
         int? pageSize = null,
+        int pageNo = 1,
         CancellationToken cancellationToken = default);
 
     public Task<GameDto> GetGameByIdAsync(

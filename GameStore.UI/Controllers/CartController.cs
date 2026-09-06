@@ -1,4 +1,5 @@
-using GameStore.Application.Games.DTOs;
+using GameStore.Application.Common.Constants;
+using GameStore.UI.Extensions;
 using GameStore.UI.Exceptions;
 using GameStore.UI.Models.Cart;
 using GameStore.UI.Services.Games;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GameStore.UI.Controllers;
 
+[Authorize(Policy = AuthConstants.UserPolicy)]
 public class CartController : Controller
 {
     private readonly IGameService _gameService;
@@ -29,7 +31,6 @@ public class CartController : Controller
         return View(_cart);
     }
 
-    [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Add(int id, string? returnUrl, CancellationToken cancellationToken)
@@ -41,8 +42,8 @@ public class CartController : Controller
         }
         catch (ApiException ex)
         {
-            _logger.LogError(ex, "Ошибка при добавлении товара с Id: {GameId} в корзину.", id);
-            TempData["ErrorMessage"] = "Не удалось добавить товар в корзину.";
+            _logger.LogApiException(ex, "Failed to add game with Id: {GameId} to cart.", id);
+            TempData["ErrorMessage"] = "Failed to add the item to the cart.";
         }
 
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -52,7 +53,7 @@ public class CartController : Controller
 
         return RedirectToAction(nameof(Index));
     }
-
+    
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Remove(int id, string? returnUrl)

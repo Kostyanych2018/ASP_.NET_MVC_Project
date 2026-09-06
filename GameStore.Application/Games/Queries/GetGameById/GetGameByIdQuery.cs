@@ -1,5 +1,4 @@
 ﻿using GameStore.Application.Games.DTOs;
-using GameStore.Domain.Models;
 using MediatR;
 
 namespace GameStore.Application.Games.Queries.GetGameById;

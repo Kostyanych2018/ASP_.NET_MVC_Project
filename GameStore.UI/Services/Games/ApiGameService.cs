@@ -1,8 +1,12 @@
 using System.Globalization;
 using System.Net.Http.Headers;
+using GameStore.Application.Common.Models;
+using GameStore.Application.Games;
 using GameStore.Application.Games.DTOs;
 using GameStore.UI.Extensions;
+using GameStore.UI.Settings;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
 
 namespace GameStore.UI.Services.Games;
 
@@ -13,17 +17,18 @@ public class ApiGameService : IGameService
 
     public ApiGameService(
         HttpClient httpClient,
-        IConfiguration configuration)
+        IOptions<UiSettings> uiSettings)
     {
         _httpClient = httpClient;
-        _defaultPageSize = configuration.GetValue<int>("ItemsPerPage");
+        _defaultPageSize = uiSettings.Value.ItemsPerPage > 0
+            ? uiSettings.Value.ItemsPerPage
+            : GameConstants.DefaultPageSize;
     }
-
 
     public async Task<ListModel<GameDto>> GetGamesListAsync(
         string? genreNormalizedName,
-        int pageNo = 1,
         int? pageSize = null,
+        int pageNo = 1,
         CancellationToken cancellationToken = default)
     {
         var queryParams = new Dictionary<string, string?>
@@ -32,9 +37,12 @@ public class ApiGameService : IGameService
             ["pageSize"] = (pageSize ?? _defaultPageSize).ToString()
         };
 
-        var requestUri = string.IsNullOrWhiteSpace(genreNormalizedName)
-            ? QueryHelpers.AddQueryString(string.Empty, queryParams)
-            : QueryHelpers.AddQueryString($"{genreNormalizedName}", queryParams);
+        if (!string.IsNullOrWhiteSpace(genreNormalizedName))
+        {
+            queryParams["genre"] = genreNormalizedName;
+        }
+
+        var requestUri = QueryHelpers.AddQueryString(string.Empty, queryParams);
 
         var response = await _httpClient.GetAsync(requestUri, cancellationToken);
         return await response.ReadAsJsonOrThrowAsync<ListModel<GameDto>>(cancellationToken);
@@ -94,7 +102,7 @@ public class ApiGameService : IGameService
 
         var streamContent = new StreamContent(formFile.OpenReadStream());
         streamContent.Headers.ContentType = new MediaTypeHeaderValue(formFile.ContentType);
-        content.Add(streamContent, "formFile", formFile.FileName);
+        content.Add(streamContent, "file", formFile.FileName);
 
         return content;
     }

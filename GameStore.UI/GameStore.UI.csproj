@@ -5,17 +5,16 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>25c9ec6b-75aa-4380-ac7c-665d146d8258</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\GameStore.Application\GameStore.Application.csproj" />
-      <ProjectReference Include="..\GameStore.Domain\GameStore.Domain.csproj" />
       <ProjectReference Include="..\GameStore.Infrastructure\GameStore.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.10" />
-      <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
     </ItemGroup>
 
 </Project>

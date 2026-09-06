@@ -1,5 +1,5 @@
-﻿using GameStore.Application.Games.DTOs;
-using GameStore.Domain.Models;
+﻿using GameStore.Application.Common.Models;
+using GameStore.Application.Games.DTOs;
 using MediatR;
 
 namespace GameStore.Application.Games.Queries.GetGamesWithPagination;

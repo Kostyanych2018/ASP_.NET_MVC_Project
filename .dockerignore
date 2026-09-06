@@ -1,0 +1,26 @@
+# Build artifacts
+**/bin/
+**/obj/
+
+# VCS / IDE
+.git/
+.idea/
+.vs/
+.vscode/
+*.user
+*.DotSettings.user
+
+# Local secrets/env (real config is injected via compose environment/.env)
+*.env
+.env.*
+!.env.example
+
+# Uploaded runtime images (keep default placeholders only, mirrors .gitignore)
+**/wwwroot/Images/*
+!**/wwwroot/Images/default_game.png
+!**/wwwroot/Images/avatars/avatar.png
+
+# Misc
+*.md
+screenshots/
+docker/

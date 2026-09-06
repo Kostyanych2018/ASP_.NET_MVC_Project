@@ -1,32 +1,44 @@
-﻿using GameStore.Application.Common.Interfaces;
+﻿using GameStore.API.Models.Forms;
+using GameStore.Application.Files.Commands.UploadAvatar;
+using GameStore.Application.Games;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameStore.API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class FilesController: ControllerBase
+public class FilesController : BaseApiController
 {
-    private readonly IFileService _fileService;
-    private const string AvatarsFolder = "avatars";
-
-    public FilesController(IFileService fileService)
-    {
-        _fileService = fileService;
-    }
-    
     [HttpPost("avatar")]
+    [Authorize]
+    [RequestSizeLimit(GameConstants.MaxImageFileSizeBytes)]
     [Consumes("multipart/form-data")]
-    public async Task<ActionResult<string>> UploadAvatar(IFormFile? file, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<string>> UploadAvatar(
+        [FromForm] UploadAvatarFormRequest request,
+        CancellationToken cancellationToken)
     {
-        if (file == null || file.Length == 0)
+        Stream? fileStream = null;
+        try
         {
-            return BadRequest("Файл не выбран.");
+            if (request.File != null && request.File.Length > 0)
+            {
+                fileStream = request.File.OpenReadStream();
+            }
+
+            var command = new UploadAvatarCommand(
+                fileStream,
+                request.File?.FileName ?? string.Empty,
+                request.File?.Length ?? 0);
+            fileStream = null;
+
+            var relativePath = await Sender.Send(command, cancellationToken);
+            return Ok(relativePath);
         }
-
-        using var stream = file.OpenReadStream();
-        var relativePath = await _fileService.SaveFileAsync(stream, file.FileName, cancellationToken);
-
-        return Ok(relativePath);
+        finally
+        {
+            fileStream?.Dispose();
+        }
     }
 }

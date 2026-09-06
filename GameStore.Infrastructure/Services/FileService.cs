@@ -18,45 +18,32 @@ public class FileService : IFileService
         _logger = logger;
     }
 
-    public async Task<string> SaveFileAsync(Stream stream, string fileName, CancellationToken cancellationToken = default)
+    public Task<string> SaveFileAsync(
+        Stream stream,
+        string fileName,
+        CancellationToken cancellationToken = default)
     {
-        var rootDirectory = string.IsNullOrWhiteSpace(_settings.BasePath) 
-            ? Directory.GetCurrentDirectory()
-            : _settings.BasePath;
+        return SaveToFolderAsync(stream, fileName, subFolder: null, cancellationToken);
+    }
+        
 
-        var targetFolder = Path.Combine(rootDirectory, _settings.FolderName);
-
-        if (!Directory.Exists(targetFolder))
-        {
-            Directory.CreateDirectory(targetFolder);
-        }
-
-        var fileExtension = Path.GetExtension(fileName);
-        var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
-        var fullPhysicalPath = Path.Combine(targetFolder, uniqueFileName);
-
-        using (var fileStream = new FileStream(fullPhysicalPath, FileMode.Create, FileAccess.Write))
-        {
-            await stream.CopyToAsync(fileStream, cancellationToken);
-        }
-
-        _logger.LogInformation("File successfully written to disk at {PhysicalPath}", fullPhysicalPath);
-
-        return $"{_settings.FolderName}/{uniqueFileName}";
+    public Task<string> SaveAvatarAsync(
+        Stream stream,
+        string fileName,
+        CancellationToken cancellationToken = default)
+    {
+        return SaveToFolderAsync(stream, fileName, _settings.AvatarsSubFolder, cancellationToken);
     }
 
     public Task DeleteFileAsync(string fileName, CancellationToken cancellationToken = default)
     {
-        if (string.Equals(fileName, _settings.DefaultImage, StringComparison.OrdinalIgnoreCase))
+        if (IsProtectedImage(fileName))
         {
-            _logger.LogInformation("Skipped deletion of the default image: {FileName}", fileName);
+            _logger.LogInformation("Skipped deletion of protected image: {FileName}", fileName);
             return Task.CompletedTask;
         }
 
-        var rootDirectory = string.IsNullOrWhiteSpace(_settings.BasePath)
-            ? Directory.GetCurrentDirectory()
-            : _settings.BasePath;
-
+        var rootDirectory = GetRootDirectory();
         var fullPhysicalPath = Path.Combine(rootDirectory, fileName);
 
         if (File.Exists(fullPhysicalPath))
@@ -71,4 +58,46 @@ public class FileService : IFileService
 
         return Task.CompletedTask;
     }
+
+    private async Task<string> SaveToFolderAsync(
+        Stream stream,
+        string fileName,
+        string? subFolder,
+        CancellationToken cancellationToken)
+    {
+        var rootDirectory = GetRootDirectory();
+
+        var targetFolder = string.IsNullOrWhiteSpace(subFolder)
+            ? Path.Combine(rootDirectory, _settings.FolderName)
+            : Path.Combine(rootDirectory, _settings.FolderName, subFolder);
+
+        if (!Directory.Exists(targetFolder))
+        {
+            Directory.CreateDirectory(targetFolder);
+        }
+
+        var fileExtension = Path.GetExtension(fileName);
+        var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+        var fullPhysicalPath = Path.Combine(targetFolder, uniqueFileName);
+
+        await using (var fileStream = new FileStream(fullPhysicalPath, FileMode.Create, FileAccess.Write))
+        {
+            await stream.CopyToAsync(fileStream, cancellationToken);
+        }
+
+        _logger.LogInformation("File successfully written to disk at {PhysicalPath}", fullPhysicalPath);
+
+        return string.IsNullOrWhiteSpace(subFolder)
+            ? $"{_settings.FolderName}/{uniqueFileName}"
+            : $"{_settings.FolderName}/{subFolder}/{uniqueFileName}";
+    }
+
+    private string GetRootDirectory() =>
+        string.IsNullOrWhiteSpace(_settings.BasePath)
+            ? Directory.GetCurrentDirectory()
+            : _settings.BasePath;
+
+    private bool IsProtectedImage(string fileName) =>
+        string.Equals(fileName, _settings.DefaultImage, StringComparison.OrdinalIgnoreCase)
+        || string.Equals(fileName, _settings.DefaultAvatar, StringComparison.OrdinalIgnoreCase);
 }

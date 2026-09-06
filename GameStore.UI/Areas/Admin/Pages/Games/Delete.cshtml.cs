@@ -1,28 +1,28 @@
 using GameStore.Application.Games.DTOs;
-using GameStore.UI.Constants;
+using GameStore.Application.Common;
+using GameStore.Application.Common.Constants;
+using GameStore.UI.Areas.Admin.Pages;
 using GameStore.UI.Exceptions;
+using GameStore.UI.Extensions;
 using GameStore.UI.Services.Games;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace GameStore.UI.Areas.Admin.Pages.Games;
 
 [Authorize(Policy = AuthConstants.AdminPolicy)]
-public class DeleteModel : PageModel
+public class DeleteModel : AdminPageModel
 {
     private readonly IGameService _gameService;
-    private readonly ILogger<DeleteModel> _logger;
 
     public DeleteModel(
         IGameService gameService,
-        ILogger<DeleteModel> logger)
+        ILogger<DeleteModel> logger) : base(logger)
     {
         _gameService = gameService;
-        _logger = logger;
     }
 
-    [BindProperty] public GameDto Game { get; set; } = new GameDto();
+    public GameDto Game { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync(int? id, CancellationToken cancellationToken = default)
     {
@@ -38,8 +38,7 @@ public class DeleteModel : PageModel
         }
         catch (ApiException ex)
         {
-            _logger.LogError(ex, "Игра с Id: {GameId} не найдена для удаления.", id);
-            return NotFound();
+            return HandleApiExceptionNotFound(ex, "Game with Id: {GameId} was not found for deletion.", id);
         }
     }
 
@@ -57,9 +56,18 @@ public class DeleteModel : PageModel
         }
         catch (ApiException ex)
         {
-            _logger.LogError(ex, "Не удалось удалить игру с Id: {GameId}.", id);
-            ModelState.AddModelError(string.Empty, "Не удалось удалить игру.");
-            return Page();
+            var result = HandleApiExceptionForForm(ex, "Failed to delete game with Id: {GameId}.", id);
+
+            try
+            {
+                Game = await _gameService.GetGameByIdAsync(id.Value, cancellationToken);
+            }
+            catch (ApiException reloadEx)
+            {
+                Logger.LogApiException(reloadEx, "Failed to reload game Id: {GameId} after delete error.", id);
+            }
+
+            return result;
         }
     }
 }
