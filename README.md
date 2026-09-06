@@ -46,7 +46,7 @@ GameStore.Domain ← GameStore.Application
 
 ### Роли и доступ (Keycloak)
 
-Realm `GameStore`, клиент `game-store-ui` (confidential). Роли:
+Realm `GameStore`, клиент `game-store-ui`. Роли:
 
 | Роль | Назначение |
 |---|---|
